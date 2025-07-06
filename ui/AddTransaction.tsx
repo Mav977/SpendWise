@@ -5,15 +5,18 @@ import { useSQLiteContext } from "expo-sqlite";
 import { MaterialIcons } from "@expo/vector-icons";
 import Card from "./Card";
 import SegmentedControl from "@react-native-segmented-control/segmented-control";
+import AddCategory from "../components/AddCategory";
 
 const AddTransaction = ({
   insertTransaction,
   deleteCategory,
-  cat, // Add this prop
+  cat,
+  addCategory
 }: {
   insertTransaction: (transaction: Transaction) => Promise<void>;
   deleteCategory: (id: number) => Promise<void>;
-  cat: Category[]; // Add this prop type
+  cat: Category[]; 
+   addCategory: (name: string, type: string) => Promise<void>;
 }) => {
   const [isAddingTransaction, setIsAddingTransaction] =
     React.useState<boolean>(false);
@@ -100,7 +103,9 @@ const AddTransaction = ({
               <MaterialIcons name="add" size={20} color="#007BFF" />
               <Text>Add Category</Text>
             </TouchableOpacity> */}
-            
+            <AddCategory categoryType={currentTab===0? "Expense":"Income"} addCategory={addCategory}>
+              
+            </AddCategory>
             {categoriesToShow.map((cat) => (
               <CategoryButton
                 key={cat.name}

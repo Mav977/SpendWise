@@ -83,12 +83,18 @@ const Home = () => {
       await getData();
     });
   }
-
+async function addCategory(name: string, type: string) {
+  db.withTransactionAsync(async ()=>{
+    await db.runAsync( `INSERT INTO Categories (name, type) VALUES (?, ?)`,name,type);
+    await getData();
+  })
+}
     return (
     <ScrollView contentContainerStyle={{ padding: 20, paddingVertical:15}}>
       <AddTransaction insertTransaction={insertTransaction}
       deleteCategory={deleteCategory}
       cat={categories}
+      addCategory={addCategory}
       />
         <TransactionSummary
           totalExpenses={transactionsByMonth.totalExpenses}
