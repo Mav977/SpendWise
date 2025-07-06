@@ -1,5 +1,4 @@
 import { StatusBar } from "expo-status-bar";
-
 import {
   StyleSheet,
   Text,
@@ -7,17 +6,10 @@ import {
   ActivityIndicator,
   Platform,
 } from "react-native";
-
- 
 import * as FileSystem from "expo-file-system";
-
 import { Asset } from "expo-asset";
-
-
 import { Suspense } from "react";
-
 import { SQLiteProvider, useSQLiteContext } from "expo-sqlite";
-
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import Home from "./screens/Home";
