@@ -64,6 +64,7 @@ const AddTransaction = ({
           <Card>
             <TextInput
               placeholder="Rs.Amount"
+              placeholderTextColor="#CCC"
               style={{ fontSize: 32, marginBottom: 15, fontWeight: "bold" }}
               keyboardType="numeric"
               onChangeText={(text) => {
@@ -81,6 +82,9 @@ const AddTransaction = ({
             <SegmentedControl
               values={["Expense", "Income"]}
               selectedIndex={currentTab}
+               tintColor="#EEE" 
+  backgroundColor="#FFFFFF" 
+  fontStyle={{ color: '#000' }} // 👈 Does NOT work — see note below
               onChange={(event) => {
                 setCurrentTab(event.nativeEvent.selectedSegmentIndex);
               }}
@@ -104,7 +108,7 @@ const AddTransaction = ({
               <Text>Add Category</Text>
             </TouchableOpacity> */}
             <AddCategory categoryType={currentTab===0? "Expense":"Income"} addCategory={addCategory}>
-              
+
             </AddCategory>
             {categoriesToShow.map((cat) => (
               <CategoryButton

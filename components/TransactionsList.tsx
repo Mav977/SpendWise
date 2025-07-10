@@ -1,7 +1,8 @@
-import { View, Text, TouchableOpacity } from "react-native";
+import { FlatList, View, TouchableOpacity } from "react-native";
 import React from "react";
 import { Category, Transaction } from "../types";
 import TransactionsListItem from "./TransactionListItem";
+
 const TransactionsList = ({
   categories,
   transactions,
@@ -12,27 +13,28 @@ const TransactionsList = ({
   deleteTransaction: (id: number) => Promise<void>;
 }) => {
   return (
-     <View style={{gap:15}}>
-    {
-        transactions.map((transaction)=>{
-            const categoryForCurrentItem=categories.find(
-                (category)=>category.id===transaction.category_id
-            )
-            return(
-                <TouchableOpacity
-                key={transaction.id}
-                activeOpacity={0.7}
-                onLongPress={()=>deleteTransaction(transaction.id)}
-                >
-                <TransactionsListItem
-                    transaction={transaction}
-                    categoryInfo={categoryForCurrentItem}
-                />
-                </TouchableOpacity>
-            )
-        })
-    }
-  </View>);
+    <FlatList
+      data={transactions}
+      keyExtractor={(item) => item.id.toString()}
+      contentContainerStyle={{ gap: 15 }}
+      renderItem={({ item }) => {
+        const categoryInfo = categories.find(
+          (category) => category.id === item.category_id
+        );
+        return (
+          <TouchableOpacity
+            activeOpacity={0.7}
+            onLongPress={() => deleteTransaction(item.id)}
+          >
+            <TransactionsListItem
+              transaction={item}
+              categoryInfo={categoryInfo}
+            />
+          </TouchableOpacity>
+        );
+      }}
+    />
+  );
 };
 
 export default TransactionsList;

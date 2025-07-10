@@ -17,3 +17,7 @@ export interface TransactionsByMonth {
   totalExpenses: number;
   totalIncome: number;
 }
+export type RootStackParamList = {
+  Home: undefined;
+  Categorise: { receiver: string; amount: number;ask: number; };
+};

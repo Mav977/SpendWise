@@ -31,7 +31,7 @@ export const categoryColors: { [key: string]: string } = {
   "Online Sales": "#008080",   // Teal
 
   // Default fallback for any unmapped category
-  Default: "#D3D3D3", // LightGray
+  Default: "#6495ED", // LightGray
 };
 
 // Define emojis for each category

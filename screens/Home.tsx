@@ -1,11 +1,92 @@
-import { View, Text, ScrollView, TextStyle, StyleSheet } from 'react-native'
-import React, { useEffect, useState } from 'react'
-import { Category, Transaction, TransactionsByMonth } from '../types';
+import { View, Text, ScrollView, TextStyle, StyleSheet, Button, Platform, Linking, Alert, TouchableOpacity, RefreshControl, FlatList } from 'react-native'
+import React, { useCallback, useEffect, useState } from 'react'
+import { Category, RootStackParamList, Transaction, TransactionsByMonth } from '../types';
 import { useSQLiteContext } from 'expo-sqlite';
 import TransactionsList from '../components/TransactionsList';
 import Card from "../ui/Card"
 import AddTransaction from '../ui/AddTransaction';
+import * as IntentLauncher from 'expo-intent-launcher';
+import NotificationListener from 'react-native-android-notification-listener';
+import * as FileSystem from 'expo-file-system';
+import { DeviceEventEmitter } from 'react-native';
+import * as Notifications from 'expo-notifications';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { getAllAppData } from '../src/db/helpers';
+import { addCategory } from '../src/db/addCategory';
+import TransactionsListItem from "../components/TransactionListItem"
+type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'Home'>;
+
+type HomeScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Home'>;
+
+
 const Home = () => {
+const navigation = useNavigation<HomeScreenNavigationProp>();
+useEffect(() => {
+  Notifications.requestPermissionsAsync().then(({ granted }) => {
+    if (!granted) {
+      alert('Notification permission not granted');
+    }
+  });
+}, []);
+useEffect(() => {
+  const subscription = DeviceEventEmitter.addListener(
+    "transactionInserted",
+    () => {
+      console.log("🔄 Received event: transactionInserted");
+      getData(); // this will re-fetch data and update UI
+    }
+  );
+  // Clean up
+  return () => {
+    subscription.remove();
+  };
+}, []);
+    
+useEffect(() => {
+  const checkNotificationAccess = async () => {
+    if (Platform.OS === 'android') {
+      const status = await NotificationListener.getPermissionStatus();
+
+      if (status !== 'authorized') {
+        Alert.alert(
+          "Notification Access Required",
+          "To detect UPI messages, please grant Notification Access to this app.",
+          [
+            {
+              text: "Cancel",
+              style: "cancel",
+            },
+            {
+              text: "Open Settings",
+              onPress: () => {
+                // Open notification access settings
+                IntentLauncher.startActivityAsync(
+                  IntentLauncher.ActivityAction.NOTIFICATION_LISTENER_SETTINGS
+                );
+              },
+            },
+          ],
+          { cancelable: true }
+        );
+      } else {
+        console.log("✅ Notification permission is already granted");
+      }
+    }
+  };
+
+  checkNotificationAccess();
+}, []);
+ const [refreshing, setRefreshing] = useState(false);
+
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+
+   getData();
+    setTimeout(() => {
+      setRefreshing(false);
+    }, 1500);
+  }, []);
     //useState<Category[]>([]); means categories is an array of type Category (taken from types.ts)
     const [categories,setCategories]=useState<Category[]>([]);
     const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -16,43 +97,14 @@ const Home = () => {
     });
 
     const db=useSQLiteContext();
+
     useEffect(()=>{db.withTransactionAsync(async()=>await getData())},[db]);
 
     async function getData() {
-         const result = await db.getAllAsync<Transaction>(
-      `SELECT * FROM Transactions 
-       ORDER BY date DESC
-       LIMIT 30;`
-    );
-    setTransactions(result);
-
-    const categoriesResult = await db.getAllAsync<Category>(
-      `SELECT * FROM Categories;`
-    );
-    setCategories(categoriesResult);
-
-    const now = new Date();
-    // Set to the first day of the current month
-    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-    // Get the first day of the next month, then subtract one millisecond to get the end of the current month
-    const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
-    endOfMonth.setMilliseconds(endOfMonth.getMilliseconds() - 1);
-
-    // Convert to Unix timestamps (seconds)
-    const startOfMonthTimestamp = Math.floor(startOfMonth.getTime() / 1000);
-    const endOfMonthTimestamp = Math.floor(endOfMonth.getTime() / 1000);
-
-    const transactionsByMonth = await db.getAllAsync<TransactionsByMonth>(
-      `
-      SELECT
-        COALESCE(SUM(CASE WHEN type = 'Expense' THEN amount ELSE 0 END), 0) AS totalExpenses,
-        COALESCE(SUM(CASE WHEN type = 'Income' THEN amount ELSE 0 END), 0) AS totalIncome
-      FROM Transactions
-      WHERE date >= ? AND date <= ?;
-    `,
-      [startOfMonthTimestamp, endOfMonthTimestamp]
-    );
-    setTransactionsByMonth(transactionsByMonth[0]);
+  const { transactions, categories, monthlySummary } = await getAllAppData(db);
+  setTransactions(transactions);
+  setCategories(categories);
+  setTransactionsByMonth(monthlySummary);
   }
     async function deleteTransaction(id:number) {
         db.withTransactionAsync(async ()=>{
@@ -83,30 +135,76 @@ const Home = () => {
       await getData();
     });
   }
-async function addCategory(name: string, type: string) {
-  db.withTransactionAsync(async ()=>{
-    await db.runAsync( `INSERT INTO Categories (name, type) VALUES (?, ?)`,name,type);
-    await getData();
-  })
+
+
+async function handleAddCategory(name: string, type: string) {
+  await addCategory(db, name, type, (updatedCategories) => {
+    setCategories(updatedCategories);
+  });
 }
-    return (
-    <ScrollView contentContainerStyle={{ padding: 20, paddingVertical:15}}>
-      <AddTransaction insertTransaction={insertTransaction}
-      deleteCategory={deleteCategory}
-      cat={categories}
-      addCategory={addCategory}
-      />
+
+  const testNavigateToCategories = () => {
+    navigation.navigate('Categorise', {
+      receiver: 'Test Receiver',
+      amount: 100,
+      ask:0
+    });
+  };
+  
+
+   return (
+  <FlatList
+  ItemSeparatorComponent={() => <View style={{ height: 12 }} />}
+    data={transactions}
+    keyExtractor={(item) => item.id.toString()}
+    renderItem={({ item }) => {
+      const categoryForCurrentItem = categories.find(
+        (cat) => cat.id === item.category_id
+      );
+      return (
+        <TouchableOpacity
+          key={item.id}
+          activeOpacity={0.7}
+          onLongPress={() => deleteTransaction(item.id)}
+        >
+          <TransactionsListItem
+            transaction={item}
+            categoryInfo={categoryForCurrentItem}
+          />
+        </TouchableOpacity>
+      );
+    }}
+    ListHeaderComponent={
+      <>
+        <Card style={{ marginBottom: 16, padding: 16 }}>
+          <Text style={{ fontSize: 18, fontWeight: "bold", marginBottom: 10 }}>
+            Debug Navigation
+          </Text>
+          <Button title="Test Categorise Screen" onPress={testNavigateToCategories} />
+        </Card>
+
+        <AddTransaction
+          insertTransaction={insertTransaction}
+          deleteCategory={deleteCategory}
+          cat={categories}
+          addCategory={handleAddCategory}
+        />
+
         <TransactionSummary
           totalExpenses={transactionsByMonth.totalExpenses}
           totalIncome={transactionsByMonth.totalIncome}
         />
-        <TransactionsList
-          categories={categories}
-          transactions={transactions}
-          deleteTransaction={deleteTransaction}
-        />
-    </ScrollView>
-  )
+
+        <Text style={{ fontSize: 22, fontWeight: "bold", marginVertical: 10 }}>
+          All Transactions
+        </Text>
+      </>
+    }
+    contentContainerStyle={{ padding: 20 }}
+    refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+  />
+);
+
 }
 
 function TransactionSummary({

@@ -8,17 +8,75 @@ import {
 } from "react-native";
 import * as FileSystem from "expo-file-system";
 import { Asset } from "expo-asset";
-import { Suspense } from "react";
+import { createRef, Suspense, useEffect } from "react";
 import { SQLiteProvider, useSQLiteContext } from "expo-sqlite";
-import { NavigationContainer } from "@react-navigation/native";
+import { NavigationContainer, NavigationContainerRef } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import Home from "./screens/Home";
+import CategoriseScreen from "./screens/CategoriseScreen"
+import * as Linking from 'expo-linking';
+import * as Notifications from 'expo-notifications';
+import { RootStackParamList } from "./types";
+import { useNavigationContainerRef } from '@react-navigation/native';
 
-const Stack = createNativeStackNavigator();
+// const navigationRef = useNavigationContainerRef();
+export const navigationRef = createRef<NavigationContainerRef<RootStackParamList>>();
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    
+    shouldPlaySound: false,
+    shouldSetBadge: false,
+    shouldShowBanner: true,
+    shouldShowList: true,
+  }),
+});
+const Stack = createNativeStackNavigator<RootStackParamList>();
+const linking = {
+  prefixes: [Linking.createURL('/')],
+  config: {
+    screens: {
+      Home: '',
+      Categorise: {
+        path: 'categorise',
+        parse: {
+          receiver: (receiver: string) => decodeURIComponent(receiver),
+          amount: (amount: string) => parseFloat(amount),
+          
+        },
+      },
+    },
+  },
+};
+
 
 export default function App() {
+  useEffect(() => {
+   const subscription = Notifications.addNotificationResponseReceivedListener(response => {
+  const deepLink = response.notification.request.content.data?.deepLink;
+
+  if (deepLink && typeof deepLink === 'string') {
+    try {
+      const url = new URL(deepLink);
+      const receiver = url.searchParams.get('receiver');
+      const amount = parseFloat(url.searchParams.get('amount') || '0');
+      const ask = parseFloat(url.searchParams.get('alwaysask') || '0');
+      if (receiver && !isNaN(amount)) {
+        console.log("🔗 Navigating to Categorise screen with:", { receiver, amount, ask });
+        navigationRef.current?.navigate('Categorise', { receiver, amount, ask });
+      } else {
+        console.log("⚠️ Missing or invalid parameters in deep link");
+      }
+    } catch (e) {
+      console.error("❌ Invalid deep link URL:", deepLink);
+    }
+  }
+});
+
+
+    return () => subscription.remove();
+  }, []);
   return (
-    <NavigationContainer>
+   <NavigationContainer linking={linking} ref={navigationRef}>
       <Suspense
         fallback={
           <View
@@ -50,6 +108,7 @@ export default function App() {
                 headerBlurEffect: "light",
               }}
             />
+            <Stack.Screen name="Categorise" component={CategoriseScreen} />
           </Stack.Navigator>
         </SQLiteProvider>
       </Suspense>
