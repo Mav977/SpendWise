@@ -2,12 +2,12 @@ import {
   View,
   Text,
   TextInput,
-  Button,
   Switch,
   StyleSheet,
   TouchableOpacity,
+  ActivityIndicator,
 } from "react-native";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useRoute, useNavigation } from "@react-navigation/native";
 import * as SQLite from "expo-sqlite";
 import { getDB } from "../db";
@@ -16,6 +16,12 @@ import AddCategory from "../components/AddCategory";
 import { Category } from "../types";
 import { addCategory } from "../src/db/addCategory";
 import { getAllAppData } from "../src/db/helpers";
+import { fetchAi } from "../src/utils/fetchAI";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+
+// Define the purple color for reuse
+const PURPLE_COLOR = "rgba(115, 0, 255, 0.72)"; // Your header purple
+const LIGHT_PURPLE_BACKGROUND = "rgb(223, 197, 250)";
 
 const CategoriseScreen = () => {
   const route = useRoute();
@@ -25,6 +31,7 @@ const CategoriseScreen = () => {
     amount: number;
     ask: number;
   };
+  const decodedReceiver = decodeURIComponent(receiver);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
   const [category, setCategory] = useState("");
@@ -33,16 +40,57 @@ const CategoriseScreen = () => {
   const [transactionType, setTransactionType] = useState<"Expense" | "Income">(
     "Expense"
   );
+  const [isloading, setisloading]=useState(false);
+  const [show,setshow]=useState(false); 
+  const aiFetchAttemptedRef = useRef(false); 
+
   useEffect(() => {
     setAlwaysAsk(ask ? true : false);
     const getCategories = async () => {
       const db = await getDB();
       const updatedData = await getAllAppData(db);
-
       setCategories(updatedData.categories);
     };
     getCategories();
   }, []);
+
+  useEffect(() => {
+    if (categories.length > 0 && !aiFetchAttemptedRef.current) {
+      aiFetchAttemptedRef.current = true; 
+
+      const fetchFromAi = async () => {
+          setisloading(true);
+          setshow(false); 
+
+          const tosendAI = `₹ ${amount},${receiver}`;
+          const categoryNames = categories.map((item) => item.name);
+
+          try {
+            const ai = await fetchAi(tosendAI, categoryNames);
+
+            if (!ai || !ai.category) {
+                console.warn("Ai is not available");
+            } else {
+                const aiCategory = ai.category; 
+                if (categoryNames.some((c) => c.toLowerCase() === aiCategory.toLowerCase())){
+                     setCategory(aiCategory);
+                }
+                const aiDescription = ai.description; 
+                setDescription(aiDescription);
+                const aiType = ai.type; 
+                setTransactionType(aiType);
+                setshow(true); 
+            }
+          }  catch (error) {
+            console.error("Error fetching AI suggestions:", error);
+            setshow(false);   
+          } finally {
+            setisloading(false); 
+          }
+      };
+      fetchFromAi();
+    }
+  }, [categories, receiver, amount]); 
 
   const handleAddCategory = async (name: string, type: string) => {
     const db = await getDB();
@@ -51,6 +99,7 @@ const CategoriseScreen = () => {
       setCategory(name);
     });
   };
+
   const handleSave = async () => {
     const db = await getDB();
 
@@ -71,9 +120,9 @@ const CategoriseScreen = () => {
       } else {
         // New receiver — insert
         await db.runAsync(
-          `INSERT INTO UPICategory (receiver, category, description, alwaysAsk)
-       VALUES (?, ?, ?, ?)`,
-          [receiver, category, description, alwaysAsk ? 1 : 0]
+          `INSERT INTO UPICategory (receiver, category, description, alwaysAsk, type)
+       VALUES (?, ?, ?, ?, ?)`,
+          [receiver, category, description, alwaysAsk ? 1 : 0, transactionType]
         );
       }
 
@@ -86,7 +135,6 @@ const CategoriseScreen = () => {
         await db.runAsync(
           `INSERT INTO Transactions (category_id, amount, date, description, type)
            VALUES (?, ?, ?, ?, ?)`,
-          
           [
             //@ts-ignore
             cat[0].id,
@@ -98,14 +146,13 @@ const CategoriseScreen = () => {
         );
       }
     });
-
     navigation.goBack();
   };
 
   return (
     <View style={styles.container}>
       <Text style={styles.label}>
-        Receiver: <Text style={styles.value}>{receiver}</Text>
+        Receiver: <Text style={styles.value}>{decodedReceiver}</Text>
       </Text>
       <Text style={styles.label}>
         Amount: <Text style={styles.value}>₹{amount}</Text>
@@ -119,12 +166,28 @@ const CategoriseScreen = () => {
             event.nativeEvent.selectedSegmentIndex === 0 ? "Expense" : "Income";
           setTransactionType(selected);
         }}
-        style={{ marginBottom: 16 }}
+        style={styles.segmentedControl} 
+        backgroundColor={LIGHT_PURPLE_BACKGROUND} 
+        tintColor={PURPLE_COLOR}
+      
       />
       <AddCategory
         categoryType={transactionType}
         addCategory={handleAddCategory}
       />
+       {isloading && (
+        <View style={styles.aiSuggestionContainer}>
+          <ActivityIndicator size="small" color={PURPLE_COLOR} /> 
+          <Text style={styles.aiLoadingText}>Loading AI suggestions....</Text>
+        </View>
+      )}
+      {show && !isloading && (
+        <View style={styles.aiSuggestionContainer}>
+          <MaterialCommunityIcons name="robot-outline" size={20} color={PURPLE_COLOR} />
+          <Text style={styles.aiSuggestionText}>AI suggestions:</Text>
+        </View>
+      )}
+
       <TextInput
         style={styles.input}
         placeholder="Category"
@@ -176,11 +239,18 @@ const CategoriseScreen = () => {
 
       <View style={styles.switchRow}>
         <Text style={styles.switchLabel}>Always Ask</Text>
-        <Switch value={alwaysAsk} onValueChange={setAlwaysAsk} />
+        <Switch
+          value={alwaysAsk}
+          onValueChange={setAlwaysAsk}
+          thumbColor={alwaysAsk ? PURPLE_COLOR : "#f4f3f4"} 
+          trackColor={{ false: "#767577", true: PURPLE_COLOR }} 
+        />
       </View>
 
       <View style={styles.buttonWrapper}>
-        <Button title="Save" onPress={handleSave} color="#007AFF" />
+         <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
+          <Text style={styles.saveButtonText}>Save</Text>
+        </TouchableOpacity>
       </View>
     </View>
   );
@@ -192,7 +262,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 24,
-    backgroundColor: "#EEE",
+    backgroundColor: "#F2E7FE",
   },
   label: {
     fontSize: 16,
@@ -206,7 +276,7 @@ const styles = StyleSheet.create({
   },
   input: {
     height: 50,
-    borderColor: "#999", // darker gray
+    borderColor: "#999",
     borderWidth: 1,
     borderRadius: 10,
     paddingHorizontal: 14,
@@ -218,6 +288,18 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     shadowOffset: { width: 0, height: 2 },
     elevation: 3,
+  },
+  saveButton: {
+    backgroundColor: PURPLE_COLOR,
+    paddingVertical: 12,
+    borderRadius: 10,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  saveButtonText: {
+    color: "#FFFFFF",
+    fontSize: 18,
+    fontWeight: "bold",
   },
   switchRow: {
     flexDirection: "row",
@@ -231,8 +313,29 @@ const styles = StyleSheet.create({
     color: "#333",
   },
   buttonWrapper: {
-    marginTop: 20,
+    marginTop: 10,
     borderRadius: 10,
     overflow: "hidden",
   },
+   aiSuggestionContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 10,
+  },
+  aiLoadingText: {
+    marginLeft: 8,
+    fontSize: 16,
+    fontStyle: "italic",
+    color: "#555",
+  },
+  aiSuggestionText: {
+    marginLeft: 8,
+    fontSize: 16,
+    fontWeight: "bold",
+    color: PURPLE_COLOR,
+  },
+  segmentedControl: { 
+    marginBottom: 16,
+    height: 40,
+  }
 });

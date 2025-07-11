@@ -199,7 +199,7 @@ const AddTransaction = ({
             <TouchableOpacity
               onPress={handleSave}
               style={{
-                backgroundColor: "#2ecc71",
+                backgroundColor: "rgb(154, 68, 247)",
                 paddingVertical: 10,
                 paddingHorizontal: 25,
                 borderRadius: 8,
@@ -278,14 +278,14 @@ function AddButton({
         alignItems: "center",
 
         justifyContent: "center",
-        backgroundColor: "#007BFF20",
+        backgroundColor: "rgba(115, 0, 255, 0.3)",
         borderRadius: 15,
       }}
     >
-      <MaterialIcons name="add-circle-outline" size={24} color="#007BFF" />
-      <Text style={{ fontWeight: "700", color: "#007BFF", marginLeft: 5 }}>
-        New Entry
-      </Text>
+      <MaterialIcons name="add-circle-outline" size={24} color="#7300FF" />
+<Text style={{ fontWeight: "700", color: "#7300FF", marginLeft: 5 }}>
+  New Entry
+</Text>
     </TouchableOpacity>
   );
 }

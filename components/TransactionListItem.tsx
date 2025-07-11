@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet } from "react-native";
+import { View, Text, StyleSheet, Button, TouchableOpacity } from "react-native";
 import { AntDesign } from "@expo/vector-icons";
 import React from "react";
 import { Category, Transaction } from "../types";
@@ -9,10 +9,12 @@ import { AutoSizeText, ResizeTextMode } from "react-native-auto-size-text";
 interface TransactionListItemProps {
   transaction: Transaction;
   categoryInfo: Category | undefined;
+  onToggleType: (id: number, newType: "Expense" | "Income") => void;
 }
 const TransactionListItem = ({
   transaction,
   categoryInfo,
+   onToggleType,
 }: TransactionListItemProps) => {
     const iconName=transaction.type === "Expense" ? "minuscircle" : "pluscircle";
     const color = transaction.type === "Expense" ? "red" : "green";
@@ -40,6 +42,17 @@ const TransactionListItem = ({
           description={transaction.description}
           />
     </View>
+     <TouchableOpacity
+        style={styles.flipButton}
+        onPress={() =>
+          onToggleType(
+            transaction.id,
+            transaction.type === "Expense" ? "Income" : "Expense"
+          )
+        }
+      >
+        <Text style={styles.flipText}>Flip to {transaction.type === "Expense" ? "Income" : "Expense"}</Text>
+      </TouchableOpacity>
     </Card>
   );
 };
@@ -84,25 +97,52 @@ function CategoryItem({
     
 }
 
-
-function TransactionInfo({id,date,description}:{id:number,date:number,description:string}) {
-    return(
-        <View>
-            <Text style={{ fontSize: 16, fontWeight: "bold" }}>{description}</Text>
+function TransactionInfo({
+  id,
+  date,
+  description,
+}: {
+  id: number;
+  date: number;
+  description: string;
+}) {
+  return (
+    <View style={{ flex: 1 }}>
+      <Text
+        style={{ fontSize: 16, fontWeight: "bold" }}
+        numberOfLines={1}
+        ellipsizeMode="tail"
+      >
+        {description}
+      </Text>
       <Text>Transaction number {id}</Text>
       <Text style={{ fontSize: 12, color: "gray" }}>
-        {new Date(date).toDateString()} 
-        </Text>
-        </View>
-    )
+        {new Date(date).toDateString()}
+      </Text>
+    </View>
+  );
 }
 
+
 const styles = StyleSheet.create({
+   flipText: {
+    fontSize: 12,
+    color: "#333",
+  },
+  flipButton: {
+    marginTop: 8,
+    alignSelf: "flex-end",
+    paddingVertical: 2,
+    paddingHorizontal: 10,
+    backgroundColor: "#eeeeee",
+    borderRadius: 10,
+  },
   amount: {
     fontSize: 32,
     fontWeight: "800",
   },
   row: {
+   
     flexDirection: "row",
     alignItems: "center",
     gap: 6,

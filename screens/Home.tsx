@@ -2,7 +2,6 @@ import { View, Text, ScrollView, TextStyle, StyleSheet, Button, Platform, Linkin
 import React, { useCallback, useEffect, useState } from 'react'
 import { Category, RootStackParamList, Transaction, TransactionsByMonth } from '../types';
 import { useSQLiteContext } from 'expo-sqlite';
-import TransactionsList from '../components/TransactionsList';
 import Card from "../ui/Card"
 import AddTransaction from '../ui/AddTransaction';
 import * as IntentLauncher from 'expo-intent-launcher';
@@ -10,7 +9,7 @@ import NotificationListener from 'react-native-android-notification-listener';
 import * as FileSystem from 'expo-file-system';
 import { DeviceEventEmitter } from 'react-native';
 import * as Notifications from 'expo-notifications';
-import { useNavigation } from '@react-navigation/native';
+import { useIsFocused, useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { getAllAppData } from '../src/db/helpers';
 import { addCategory } from '../src/db/addCategory';
@@ -21,6 +20,16 @@ type HomeScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'H
 
 
 const Home = () => {
+   const isFocused = useIsFocused(); // Get the focus state
+
+  
+  useEffect(() => {
+    // This effect runs whenever the screen's focus state changes
+    if (isFocused) {
+      console.log("Home screen is focused, refreshing data.");
+      getData(); // Call your data fetching function
+    }
+  }, [isFocused]); // Depend on isFocused
 const navigation = useNavigation<HomeScreenNavigationProp>();
 useEffect(() => {
   Notifications.requestPermissionsAsync().then(({ granted }) => {
@@ -136,7 +145,15 @@ useEffect(() => {
     });
   }
 
-
+async function toggleTransactionType(id: number, newType: "Expense" | "Income") {
+  await db.withTransactionAsync(async () => {
+    await db.runAsync(`UPDATE Transactions SET type = ? WHERE id = ?`, [
+      newType,
+      id,
+    ]);
+  });
+  await getData();
+}
 async function handleAddCategory(name: string, type: string) {
   await addCategory(db, name, type, (updatedCategories) => {
     setCategories(updatedCategories);
@@ -170,6 +187,7 @@ async function handleAddCategory(name: string, type: string) {
           <TransactionsListItem
             transaction={item}
             categoryInfo={categoryForCurrentItem}
+            onToggleType={toggleTransactionType}
           />
         </TouchableOpacity>
       );
@@ -200,7 +218,8 @@ async function handleAddCategory(name: string, type: string) {
         </Text>
       </>
     }
-    contentContainerStyle={{ padding: 20 }}
+    contentContainerStyle={{ padding: 20,
+    flexGrow: 1, backgroundColor: '#F2E7FF' }}
     refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
   />
 );

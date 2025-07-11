@@ -19,6 +19,22 @@ import * as Notifications from 'expo-notifications';
 import { RootStackParamList } from "./types";
 import { useNavigationContainerRef } from '@react-navigation/native';
 
+ // adjust alpha (0.1–0.3 for more/less opacity)
+ const LIGHT_PURPLE="#F2E7FE";
+const HEADER_PURPLE = "rgba(115, 0, 255, 0.72)";
+
+export async function resetToAssetDB() {
+  const path = `${FileSystem.documentDirectory}SQLite/myDatabase.db`;
+
+  try {
+    await FileSystem.deleteAsync(path, { idempotent: true });
+    console.log("🗑️ Deleted sandboxed DB. Will reload from assets on next access.");
+  } catch (error) {
+    console.error("❌ Failed to delete DB:", error);
+  }
+}
+
+
 // const navigationRef = useNavigationContainerRef();
 export const navigationRef = createRef<NavigationContainerRef<RootStackParamList>>();
 Notifications.setNotificationHandler({
@@ -50,6 +66,12 @@ const linking = {
 
 
 export default function App() {
+  // useEffect(() => {
+  //   const reset = async () => {
+  //     await resetToAssetDB();
+  //   };
+  //   reset();
+  // }, []);
   useEffect(() => {
    const subscription = Notifications.addNotificationResponseReceivedListener(response => {
   const deepLink = response.notification.request.content.data?.deepLink;
@@ -76,7 +98,7 @@ export default function App() {
     return () => subscription.remove();
   }, []);
   return (
-   <NavigationContainer linking={linking} ref={navigationRef}>
+   <NavigationContainer linking={linking} ref={navigationRef} >
       <Suspense
         fallback={
           <View
@@ -97,7 +119,19 @@ export default function App() {
           assetSource={{ assetId: require("./assets/myDatabase.db") }}
           useSuspense
         >
-          <Stack.Navigator>
+          <Stack.Navigator
+            screenOptions={{
+              headerStyle: {
+                backgroundColor: HEADER_PURPLE,
+              },
+              headerTitleStyle: {
+                color: "#FFF", // dark purple text
+              },
+             contentStyle:{
+              backgroundColor:LIGHT_PURPLE
+             }
+            }}
+          >
             <Stack.Screen
               name="Home"
               component={Home}
