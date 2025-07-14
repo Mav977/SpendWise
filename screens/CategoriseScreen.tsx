@@ -26,23 +26,35 @@ const LIGHT_PURPLE_BACKGROUND = "rgb(223, 197, 250)";
 const CategoriseScreen = () => {
   const route = useRoute();
   const navigation = useNavigation();
-  const { receiver, amount, ask } = route.params as {
+  const {
+    receiver,
+    amount,
+    ask,
+    transactionId,
+    initialCategory,
+    initialDescription,
+    initialType,
+  } = route.params as {
     receiver: string;
     amount: number;
     ask: number;
+    transactionId: number;
+    initialCategory: string;
+    initialDescription: string;
+    initialType: "Expense" | "Income";
   };
   const decodedReceiver = decodeURIComponent(receiver);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
-  const [category, setCategory] = useState("");
-  const [description, setDescription] = useState("");
+  const [category, setCategory] = useState(initialCategory || "");
+  const [description, setDescription] = useState(initialDescription || "");
   const [alwaysAsk, setAlwaysAsk] = useState(false);
   const [transactionType, setTransactionType] = useState<"Expense" | "Income">(
-    "Expense"
+    initialType || "Expense" // Pre-fill if editing
   );
-  const [isloading, setisloading]=useState(false);
-  const [show,setshow]=useState(false); 
-  const aiFetchAttemptedRef = useRef(false); 
+  const [isloading, setisloading] = useState(false);
+  const [show, setshow] = useState(false);
+  const aiFetchAttemptedRef = useRef(false);
 
   useEffect(() => {
     setAlwaysAsk(ask ? true : false);
@@ -55,42 +67,50 @@ const CategoriseScreen = () => {
   }, []);
 
   useEffect(() => {
-    if (categories.length > 0 && !aiFetchAttemptedRef.current) {
-      aiFetchAttemptedRef.current = true; 
+    if (
+      transactionId === undefined &&
+      categories.length > 0 &&
+      !aiFetchAttemptedRef.current
+    ) {
+      aiFetchAttemptedRef.current = true;
 
       const fetchFromAi = async () => {
-          setisloading(true);
-          setshow(false); 
+        setisloading(true);
+        setshow(false);
 
-          const tosendAI = `₹ ${amount},${receiver}`;
-          const categoryNames = categories.map((item) => item.name);
+        const tosendAI = `₹ ${amount},${receiver}`;
+        const categoryNames = categories.map((item) => item.name);
 
-          try {
-            const ai = await fetchAi(tosendAI, categoryNames);
+        try {
+          const ai = await fetchAi(tosendAI, categoryNames);
 
-            if (!ai || !ai.category) {
-                console.warn("Ai is not available");
-            } else {
-                const aiCategory = ai.category; 
-                if (categoryNames.some((c) => c.toLowerCase() === aiCategory.toLowerCase())){
-                     setCategory(aiCategory);
-                }
-                const aiDescription = ai.description; 
-                setDescription(aiDescription);
-                const aiType = ai.type; 
-                setTransactionType(aiType);
-                setshow(true); 
+          if (!ai || !ai.category) {
+            console.warn("Ai is not available");
+          } else {
+            const aiCategory = ai.category;
+            if (
+              categoryNames.some(
+                (c) => c.toLowerCase() === aiCategory.toLowerCase()
+              )
+            ) {
+              setCategory(aiCategory);
             }
-          }  catch (error) {
-            console.error("Error fetching AI suggestions:", error);
-            setshow(false);   
-          } finally {
-            setisloading(false); 
+            const aiDescription = ai.description;
+            setDescription(aiDescription);
+            const aiType = ai.type;
+            setTransactionType(aiType);
+            setshow(true);
           }
+        } catch (error) {
+          console.error("Error fetching AI suggestions:", error);
+          setshow(false);
+        } finally {
+          setisloading(false);
+        }
       };
       fetchFromAi();
     }
-  }, [categories, receiver, amount]); 
+  }, [categories, receiver, amount]);
 
   const handleAddCategory = async (name: string, type: string) => {
     const db = await getDB();
@@ -104,46 +124,72 @@ const CategoriseScreen = () => {
     const db = await getDB();
 
     await db.withTransactionAsync(async () => {
-      const existing = await db.getAllAsync(
-        `SELECT * FROM UPICategory WHERE receiver = ?`,
-        [receiver]
-      );
+      if (receiver) {
+        const existing = await db.getAllAsync(
+          `SELECT * FROM UPICategory WHERE receiver = ?`,
+          [receiver]
+        );
 
-      if (existing.length > 0) {
-        // Receiver already exists — update
-        await db.runAsync(
-          `UPDATE UPICategory
+        if (existing.length > 0) {
+          // Receiver already exists — update
+          await db.runAsync(
+            `UPDATE UPICategory
        SET category = ?, description = ?, alwaysAsk = ?
        WHERE receiver = ?`,
-          [category, description, alwaysAsk ? 1 : 0, receiver]
-        );
-      } else {
-        // New receiver — insert
-        await db.runAsync(
-          `INSERT INTO UPICategory (receiver, category, description, alwaysAsk, type)
+            [category, description, alwaysAsk ? 1 : 0, receiver]
+          );
+        } else {
+          // New receiver — insert
+          await db.runAsync(
+            `INSERT INTO UPICategory (receiver, category, description, alwaysAsk, type)
        VALUES (?, ?, ?, ?, ?)`,
-          [receiver, category, description, alwaysAsk ? 1 : 0, transactionType]
-        );
+            [
+              receiver,
+              category,
+              description,
+              alwaysAsk ? 1 : 0,
+              transactionType,
+            ]
+          );
+        }
       }
-
       const cat = await db.getAllAsync(
         "SELECT id FROM Categories WHERE name = ?",
         [category]
       );
 
       if (cat.length > 0) {
-        await db.runAsync(
-          `INSERT INTO Transactions (category_id, amount, date, description, type)
+        if (transactionId) {
+          console.log("Reached here");
+          await db.runAsync(
+            `UPDATE Transactions
+             SET category_id = ?, amount = ?, date = ?, description = ?, type = ?
+             WHERE id = ?`,
+            
+            [//@ts-ignore
+              cat[0].id,
+              amount,
+              Date.now(),
+              description || receiver,
+              transactionType,
+              transactionId,
+            ]
+          );
+          console.log(" Updated transaction:", transactionId);
+        } else {
+          await db.runAsync(
+            `INSERT INTO Transactions (category_id, amount, date, description, type)
            VALUES (?, ?, ?, ?, ?)`,
-          [
-            //@ts-ignore
-            cat[0].id,
-            amount,
-            Date.now(),
-            description || receiver,
-            transactionType,
-          ]
-        );
+            [
+              //@ts-ignore
+              cat[0].id,
+              amount,
+              Date.now(),
+              description || receiver,
+              transactionType,
+            ]
+          );
+        }
       }
     });
     navigation.goBack();
@@ -151,9 +197,11 @@ const CategoriseScreen = () => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.label}>
-        Receiver: <Text style={styles.value}>{decodedReceiver}</Text>
-      </Text>
+      {receiver && (
+        <Text style={styles.label}>
+          Receiver: <Text style={styles.value}>{decodedReceiver}</Text>
+        </Text>
+      )}
       <Text style={styles.label}>
         Amount: <Text style={styles.value}>₹{amount}</Text>
       </Text>
@@ -166,24 +214,27 @@ const CategoriseScreen = () => {
             event.nativeEvent.selectedSegmentIndex === 0 ? "Expense" : "Income";
           setTransactionType(selected);
         }}
-        style={styles.segmentedControl} 
-        backgroundColor={LIGHT_PURPLE_BACKGROUND} 
+        style={styles.segmentedControl}
+        backgroundColor={LIGHT_PURPLE_BACKGROUND}
         tintColor={PURPLE_COLOR}
-      
       />
       <AddCategory
         categoryType={transactionType}
         addCategory={handleAddCategory}
       />
-       {isloading && (
+      {isloading && (
         <View style={styles.aiSuggestionContainer}>
-          <ActivityIndicator size="small" color={PURPLE_COLOR} /> 
+          <ActivityIndicator size="small" color={PURPLE_COLOR} />
           <Text style={styles.aiLoadingText}>Loading AI suggestions....</Text>
         </View>
       )}
       {show && !isloading && (
         <View style={styles.aiSuggestionContainer}>
-          <MaterialCommunityIcons name="robot-outline" size={20} color={PURPLE_COLOR} />
+          <MaterialCommunityIcons
+            name="robot-outline"
+            size={20}
+            color={PURPLE_COLOR}
+          />
           <Text style={styles.aiSuggestionText}>AI suggestions:</Text>
         </View>
       )}
@@ -242,13 +293,13 @@ const CategoriseScreen = () => {
         <Switch
           value={alwaysAsk}
           onValueChange={setAlwaysAsk}
-          thumbColor={alwaysAsk ? PURPLE_COLOR : "#f4f3f4"} 
-          trackColor={{ false: "#767577", true: PURPLE_COLOR }} 
+          thumbColor={alwaysAsk ? PURPLE_COLOR : "#f4f3f4"}
+          trackColor={{ false: "#767577", true: PURPLE_COLOR }}
         />
       </View>
 
       <View style={styles.buttonWrapper}>
-         <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
+        <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
           <Text style={styles.saveButtonText}>Save</Text>
         </TouchableOpacity>
       </View>
@@ -317,7 +368,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     overflow: "hidden",
   },
-   aiSuggestionContainer: {
+  aiSuggestionContainer: {
     flexDirection: "row",
     alignItems: "center",
     marginBottom: 10,
@@ -334,8 +385,8 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: PURPLE_COLOR,
   },
-  segmentedControl: { 
+  segmentedControl: {
     marginBottom: 16,
     height: 40,
-  }
+  },
 });

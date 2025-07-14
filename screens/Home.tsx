@@ -167,8 +167,18 @@ async function handleAddCategory(name: string, type: string) {
       ask:0
     });
   };
-  
 
+ const handleEditTransaction=(transaction:Transaction)=>{
+  navigation.navigate('Categorise', {
+    
+      amount: transaction.amount,
+      ask:0,
+    transactionId: transaction.id,
+    initialCategory: categories.find(cat=>cat.id ===transaction.category_id)?.name,
+    initialDescription: transaction.description,
+    initialType: transaction.type,
+    });
+ }
    return (
   <FlatList
   ItemSeparatorComponent={() => <View style={{ height: 12 }} />}
@@ -188,18 +198,19 @@ async function handleAddCategory(name: string, type: string) {
             transaction={item}
             categoryInfo={categoryForCurrentItem}
             onToggleType={toggleTransactionType}
+            onEdit={handleEditTransaction}
           />
         </TouchableOpacity>
       );
     }}
     ListHeaderComponent={
       <>
-        <Card style={{ marginBottom: 16, padding: 16 }}>
+        {/* <Card style={{ marginBottom: 16, padding: 16 }}>
           <Text style={{ fontSize: 18, fontWeight: "bold", marginBottom: 10 }}>
             Debug Navigation
           </Text>
           <Button title="Test Categorise Screen" onPress={testNavigateToCategories} />
-        </Card>
+        </Card> */}
 
         <AddTransaction
           insertTransaction={insertTransaction}

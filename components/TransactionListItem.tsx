@@ -10,11 +10,13 @@ interface TransactionListItemProps {
   transaction: Transaction;
   categoryInfo: Category | undefined;
   onToggleType: (id: number, newType: "Expense" | "Income") => void;
+  onEdit : (transaction:Transaction) =>void
 }
 const TransactionListItem = ({
   transaction,
   categoryInfo,
-   onToggleType,
+  onToggleType,
+  onEdit,
 }: TransactionListItemProps) => {
     const iconName=transaction.type === "Expense" ? "minuscircle" : "pluscircle";
     const color = transaction.type === "Expense" ? "red" : "green";
@@ -34,6 +36,7 @@ const TransactionListItem = ({
             categoryInfo={categoryInfo}
             emoji={emoji}
           />
+         
    </View>
           
           <TransactionInfo
@@ -42,17 +45,28 @@ const TransactionListItem = ({
           description={transaction.description}
           />
     </View>
-     <TouchableOpacity
-        style={styles.flipButton}
-        onPress={() =>
-          onToggleType(
-            transaction.id,
-            transaction.type === "Expense" ? "Income" : "Expense"
-          )
-        }
-      >
-        <Text style={styles.flipText}>Flip to {transaction.type === "Expense" ? "Income" : "Expense"}</Text>
-      </TouchableOpacity>
+    <View style={styles.actionsRow}>
+  <TouchableOpacity
+    style={styles.editButton}
+    onPress={() => onEdit(transaction)}
+  >
+    <Text style={styles.editText}>Edit</Text>
+  </TouchableOpacity>
+
+  <TouchableOpacity
+    style={styles.flipButton}
+    onPress={() =>
+      onToggleType(
+        transaction.id,
+        transaction.type === "Expense" ? "Income" : "Expense"
+      )
+    }
+  >
+    <Text style={styles.flipText}>
+      Flip to {transaction.type === "Expense" ? "Income" : "Expense"}
+    </Text>
+  </TouchableOpacity>
+</View>
     </Card>
   );
 };
@@ -156,5 +170,26 @@ const styles = StyleSheet.create({
   categoryText: {
     fontSize: 12,
   },
+  actionsRow: {
+  flexDirection: "row",
+  justifyContent: "flex-end",
+  marginTop: 8,
+  gap: 10,
+},
+editButton: {
+  paddingVertical: 2,
+  paddingHorizontal: 10,
+  backgroundColor: "rgba(115, 0, 255, 0.3)",
+  borderRadius: 10,
+  justifyContent:"center",
+  alignItems:"center",
+  marginTop:10
+},
+editText: {
+  fontSize: 12,
+  color: "#FFF",
+  fontWeight:"bold"
+},
+
 });
 export default TransactionListItem;

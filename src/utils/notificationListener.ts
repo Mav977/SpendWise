@@ -4,7 +4,7 @@ import * as Notifications from "expo-notifications";
 import * as Linking from "expo-linking";
 import { getDB } from "../../db";
 import { fetchAi } from "./fetchAI";
-import { Category } from "../../types";
+import { Category, UPICategory } from "../../types";
 import { addCategory } from "../db/addCategory";
 
 let lastTimestamp = 0;
@@ -131,7 +131,6 @@ const handleNotification = async (notification: any) => {
           await sendNotif(receiver, amount, ask);
         }
       } else {
-
         const cat: Category[] = await db.getAllAsync(
           "SELECT * FROM Categories"
         );
@@ -146,44 +145,74 @@ const handleNotification = async (notification: any) => {
         }
         const category = ai.category;
         const description = ai.description;
+       
         const type = ai.type;
-        if (Number(ai.confidence_score) >= 9 && category.toLowerCase()!="unknown" && description.toLowerCase()!="unknown" && type.toLowerCase()!="unknown") {
-          if (
-            cat.some((c) => c.name.toLowerCase() === ai.category.toLowerCase())
-          ) {
-            await autoSave({
-              db,
-              receiver,
-              amount,
-              category,
-              description,
-              type,
-            });
-            await db.runAsync(
-              `INSERT INTO UPICategory (receiver, category, description, alwaysAsk, type)
-       VALUES (?, ?, ?, ?, ?)`,
-              [receiver, category, description, 0, type]
-            );
-          } else if (Number(ai.confidence_score) >= 9.5) {
-            //add category
-            await addCategory(db, ai.category, ai.type, () => {});
-
-            await autoSave({
-              db,
-              receiver,
-              amount,
-              category,
-              description,
-              type,
-            });
-            await db.runAsync(
-              `INSERT INTO UPICategory (receiver, category, description, alwaysAsk, type)
-       VALUES (?, ?, ?, ?, ?)`,
-              [receiver, category, description, 0, type]
-            );
-          }
+        const upi = await db.getAllAsync<UPICategory>(
+          "SELECT * FROM UPICategory WHERE LOWER(description) = LOWER(?)",
+          [description]
+        );
+        if (upi.length > 0) {
+          const upiCat=upi[0];
+           await db.runAsync(
+            `UPDATE UPICategory
+             SET receiver = ?, category = ?, description = ?, alwaysAsk = ?, type = ?
+             WHERE id = ?`,
+            [
+              receiver, 
+              upiCat.category, 
+              upiCat.alwaysAsk,
+              upiCat.type, 
+              upiCat.id
+            ]
+          );
+          console.log(" Matched AI description to existing UPICategory, updated receiver & details:", receiver, description);
+          await autoSave({ db, receiver, amount, category, description, type });
         } else {
-          await sendNotif(receiver, amount, 0);
+          if (
+            Number(ai.confidence_score) >= 9 &&
+            category.toLowerCase() != "unknown" &&
+            description.toLowerCase() != "unknown" &&
+            type.toLowerCase() != "unknown"
+          ) {
+            if (
+              cat.some(
+                (c) => c.name.toLowerCase() === ai.category.toLowerCase()
+              )
+            ) {
+              await autoSave({
+                db,
+                receiver,
+                amount,
+                category,
+                description,
+                type,
+              });
+              await db.runAsync(
+                `INSERT INTO UPICategory (receiver, category, description, alwaysAsk, type)
+       VALUES (?, ?, ?, ?, ?)`,
+                [receiver, category, description, 0, type]
+              );
+            } else if (Number(ai.confidence_score) >= 9.5) {
+              //add category
+              await addCategory(db, ai.category, ai.type, () => {});
+
+              await autoSave({
+                db,
+                receiver,
+                amount,
+                category,
+                description,
+                type,
+              });
+              await db.runAsync(
+                `INSERT INTO UPICategory (receiver, category, description, alwaysAsk, type)
+       VALUES (?, ?, ?, ?, ?)`,
+                [receiver, category, description, 0, type]
+              );
+            }
+          } else {
+            await sendNotif(receiver, amount, 0);
+          }
         }
       }
     });
