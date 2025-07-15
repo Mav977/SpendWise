@@ -7,7 +7,7 @@
     <key>CFBundleDevelopmentRegion</key>
     <string>$(DEVELOPMENT_LANGUAGE)</string>
     <key>CFBundleDisplayName</key>
-    <string>ExpenseTracker</string>
+    <string>Spendwise</string>
     <key>CFBundleExecutable</key>
     <string>$(EXECUTABLE_NAME)</string>
     <key>CFBundleIdentifier</key>
@@ -27,6 +27,7 @@
       <dict>
         <key>CFBundleURLSchemes</key>
         <array>
+          <string>expensetracker</string>
           <string>com.anonymous.ExpenseTracker</string>
         </array>
       </dict>

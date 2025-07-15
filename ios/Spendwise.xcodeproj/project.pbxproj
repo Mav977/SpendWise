@@ -8,28 +8,28 @@
 
 /* Begin PBXBuildFile section */
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
-		2BD64F443295635B02A23EC2 /* ExpoModulesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3FB4D64FBF6CDB2A53D3DDC5 /* ExpoModulesProvider.swift */; };
-		2ED587665775B3BAB123AAF8 /* libPods-ExpenseTracker.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5130EAB837E1568B1EB81724 /* libPods-ExpenseTracker.a */; };
-		3CFD6A8F5D2DBC9A25813698 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 4CB6B199279C7AF68FD16E4C /* PrivacyInfo.xcprivacy */; };
 		3E461D99554A48A4959DE609 /* SplashScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */; };
+		4A866C5D4AE7C5D97FB35079 /* libPods-Spendwise.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 2AE9B6B58BE88372837AAF75 /* libPods-Spendwise.a */; };
+		A513E6DC2B49B41A99FBAE10 /* ExpoModulesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C5B3EBB50EEBD31B4D502F0 /* ExpoModulesProvider.swift */; };
 		BB2F792D24A3F905000567C9 /* Expo.plist in Resources */ = {isa = PBXBuildFile; fileRef = BB2F792C24A3F905000567C9 /* Expo.plist */; };
 		F11748422D0307B40044C1D9 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F11748412D0307B40044C1D9 /* AppDelegate.swift */; };
+		FB1C986CF192C4F2E5778421 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 6E8DE022D4A8C8115EFCF9DF /* PrivacyInfo.xcprivacy */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		13B07F961A680F5B00A75B9A /* ExpenseTracker.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ExpenseTracker.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = ExpenseTracker/Images.xcassets; sourceTree = "<group>"; };
-		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = ExpenseTracker/Info.plist; sourceTree = "<group>"; };
-		1E02D1B75721C16486EDF844 /* Pods-ExpenseTracker.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ExpenseTracker.release.xcconfig"; path = "Target Support Files/Pods-ExpenseTracker/Pods-ExpenseTracker.release.xcconfig"; sourceTree = "<group>"; };
-		3FB4D64FBF6CDB2A53D3DDC5 /* ExpoModulesProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ExpoModulesProvider.swift; path = "Pods/Target Support Files/Pods-ExpenseTracker/ExpoModulesProvider.swift"; sourceTree = "<group>"; };
-		4CB6B199279C7AF68FD16E4C /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; name = PrivacyInfo.xcprivacy; path = ExpenseTracker/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
-		5130EAB837E1568B1EB81724 /* libPods-ExpenseTracker.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-ExpenseTracker.a"; sourceTree = BUILT_PRODUCTS_DIR; };
-		80E4A7CCE5D82F9C37984E56 /* Pods-ExpenseTracker.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ExpenseTracker.debug.xcconfig"; path = "Target Support Files/Pods-ExpenseTracker/Pods-ExpenseTracker.debug.xcconfig"; sourceTree = "<group>"; };
-		AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = SplashScreen.storyboard; path = ExpenseTracker/SplashScreen.storyboard; sourceTree = "<group>"; };
+		13B07F961A680F5B00A75B9A /* Spendwise.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Spendwise.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = Spendwise/Images.xcassets; sourceTree = "<group>"; };
+		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = Spendwise/Info.plist; sourceTree = "<group>"; };
+		2AE9B6B58BE88372837AAF75 /* libPods-Spendwise.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-Spendwise.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		49318C7F5A76EF6C1003770F /* Pods-Spendwise.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Spendwise.release.xcconfig"; path = "Target Support Files/Pods-Spendwise/Pods-Spendwise.release.xcconfig"; sourceTree = "<group>"; };
+		4C5B3EBB50EEBD31B4D502F0 /* ExpoModulesProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ExpoModulesProvider.swift; path = "Pods/Target Support Files/Pods-Spendwise/ExpoModulesProvider.swift"; sourceTree = "<group>"; };
+		6E8DE022D4A8C8115EFCF9DF /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; name = PrivacyInfo.xcprivacy; path = Spendwise/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		87E0AE8759A0431C6FA72A1B /* Pods-Spendwise.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Spendwise.debug.xcconfig"; path = "Target Support Files/Pods-Spendwise/Pods-Spendwise.debug.xcconfig"; sourceTree = "<group>"; };
+		AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = SplashScreen.storyboard; path = Spendwise/SplashScreen.storyboard; sourceTree = "<group>"; };
 		BB2F792C24A3F905000567C9 /* Expo.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Expo.plist; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
-		F11748412D0307B40044C1D9 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = ExpenseTracker/AppDelegate.swift; sourceTree = "<group>"; };
-		F11748442D0722820044C1D9 /* ExpenseTracker-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "ExpenseTracker-Bridging-Header.h"; path = "ExpenseTracker/ExpenseTracker-Bridging-Header.h"; sourceTree = "<group>"; };
+		F11748412D0307B40044C1D9 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = Spendwise/AppDelegate.swift; sourceTree = "<group>"; };
+		F11748442D0722820044C1D9 /* Spendwise-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "Spendwise-Bridging-Header.h"; path = "Spendwise/Spendwise-Bridging-Header.h"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -37,60 +37,60 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				2ED587665775B3BAB123AAF8 /* libPods-ExpenseTracker.a in Frameworks */,
+				4A866C5D4AE7C5D97FB35079 /* libPods-Spendwise.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		13B07FAE1A68108700A75B9A /* ExpenseTracker */ = {
+		01EE35C05EB4BEE45A0FF3D6 /* ExpoModulesProviders */ = {
+			isa = PBXGroup;
+			children = (
+				234ABF29BF9001C0DADCCE54 /* Spendwise */,
+			);
+			name = ExpoModulesProviders;
+			sourceTree = "<group>";
+		};
+		13B07FAE1A68108700A75B9A /* Spendwise */ = {
 			isa = PBXGroup;
 			children = (
 				F11748412D0307B40044C1D9 /* AppDelegate.swift */,
-				F11748442D0722820044C1D9 /* ExpenseTracker-Bridging-Header.h */,
+				F11748442D0722820044C1D9 /* Spendwise-Bridging-Header.h */,
 				BB2F792B24A3F905000567C9 /* Supporting */,
 				13B07FB51A68108700A75B9A /* Images.xcassets */,
 				13B07FB61A68108700A75B9A /* Info.plist */,
 				AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */,
-				4CB6B199279C7AF68FD16E4C /* PrivacyInfo.xcprivacy */,
+				6E8DE022D4A8C8115EFCF9DF /* PrivacyInfo.xcprivacy */,
 			);
-			name = ExpenseTracker;
+			name = Spendwise;
 			sourceTree = "<group>";
 		};
-		19F19925CF71D16949142E77 /* Pods */ = {
+		234ABF29BF9001C0DADCCE54 /* Spendwise */ = {
 			isa = PBXGroup;
 			children = (
-				80E4A7CCE5D82F9C37984E56 /* Pods-ExpenseTracker.debug.xcconfig */,
-				1E02D1B75721C16486EDF844 /* Pods-ExpenseTracker.release.xcconfig */,
+				4C5B3EBB50EEBD31B4D502F0 /* ExpoModulesProvider.swift */,
 			);
-			name = Pods;
-			path = Pods;
-			sourceTree = "<group>";
-		};
-		27FA0F234C2B4BC324663853 /* ExpenseTracker */ = {
-			isa = PBXGroup;
-			children = (
-				3FB4D64FBF6CDB2A53D3DDC5 /* ExpoModulesProvider.swift */,
-			);
-			name = ExpenseTracker;
+			name = Spendwise;
 			sourceTree = "<group>";
 		};
 		2D16E6871FA4F8E400B85C8A /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
 				ED297162215061F000B7C4FE /* JavaScriptCore.framework */,
-				5130EAB837E1568B1EB81724 /* libPods-ExpenseTracker.a */,
+				2AE9B6B58BE88372837AAF75 /* libPods-Spendwise.a */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
-		578445B4C52CF392A5A1EDA1 /* ExpoModulesProviders */ = {
+		40F96286B3D948C33DA53DBE /* Pods */ = {
 			isa = PBXGroup;
 			children = (
-				27FA0F234C2B4BC324663853 /* ExpenseTracker */,
+				87E0AE8759A0431C6FA72A1B /* Pods-Spendwise.debug.xcconfig */,
+				49318C7F5A76EF6C1003770F /* Pods-Spendwise.release.xcconfig */,
 			);
-			name = ExpoModulesProviders;
+			name = Pods;
+			path = Pods;
 			sourceTree = "<group>";
 		};
 		832341AE1AAA6A7D00B99B32 /* Libraries */ = {
@@ -103,12 +103,12 @@
 		83CBB9F61A601CBA00E9B192 = {
 			isa = PBXGroup;
 			children = (
-				13B07FAE1A68108700A75B9A /* ExpenseTracker */,
+				13B07FAE1A68108700A75B9A /* Spendwise */,
 				832341AE1AAA6A7D00B99B32 /* Libraries */,
 				83CBBA001A601CBA00E9B192 /* Products */,
 				2D16E6871FA4F8E400B85C8A /* Frameworks */,
-				19F19925CF71D16949142E77 /* Pods */,
-				578445B4C52CF392A5A1EDA1 /* ExpoModulesProviders */,
+				40F96286B3D948C33DA53DBE /* Pods */,
+				01EE35C05EB4BEE45A0FF3D6 /* ExpoModulesProviders */,
 			);
 			indentWidth = 2;
 			sourceTree = "<group>";
@@ -118,7 +118,7 @@
 		83CBBA001A601CBA00E9B192 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				13B07F961A680F5B00A75B9A /* ExpenseTracker.app */,
+				13B07F961A680F5B00A75B9A /* Spendwise.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -129,32 +129,32 @@
 				BB2F792C24A3F905000567C9 /* Expo.plist */,
 			);
 			name = Supporting;
-			path = ExpenseTracker/Supporting;
+			path = Spendwise/Supporting;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		13B07F861A680F5B00A75B9A /* ExpenseTracker */ = {
+		13B07F861A680F5B00A75B9A /* Spendwise */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "ExpenseTracker" */;
+			buildConfigurationList = 13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "Spendwise" */;
 			buildPhases = (
 				08A4A3CD28434E44B6B9DE2E /* [CP] Check Pods Manifest.lock */,
-				1D290C3B82CD0335AF0E6E93 /* [Expo] Configure project */,
+				A92A5AEFE6A6C9B6CE6C9087 /* [Expo] Configure project */,
 				13B07F871A680F5B00A75B9A /* Sources */,
 				13B07F8C1A680F5B00A75B9A /* Frameworks */,
 				13B07F8E1A680F5B00A75B9A /* Resources */,
 				00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */,
 				800E24972A6A228C8D4807E9 /* [CP] Copy Pods Resources */,
-				A7135B608C16BBB261E8F94C /* [CP] Embed Pods Frameworks */,
+				DA99F8BBDD2E2C850F1E3953 /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
 			dependencies = (
 			);
-			name = ExpenseTracker;
-			productName = ExpenseTracker;
-			productReference = 13B07F961A680F5B00A75B9A /* ExpenseTracker.app */;
+			name = Spendwise;
+			productName = Spendwise;
+			productReference = 13B07F961A680F5B00A75B9A /* Spendwise.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -170,7 +170,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 83CBB9FA1A601CBA00E9B192 /* Build configuration list for PBXProject "ExpenseTracker" */;
+			buildConfigurationList = 83CBB9FA1A601CBA00E9B192 /* Build configuration list for PBXProject "Spendwise" */;
 			compatibilityVersion = "Xcode 3.2";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -183,7 +183,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				13B07F861A680F5B00A75B9A /* ExpenseTracker */,
+				13B07F861A680F5B00A75B9A /* Spendwise */,
 			);
 		};
 /* End PBXProject section */
@@ -196,7 +196,7 @@
 				BB2F792D24A3F905000567C9 /* Expo.plist in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
 				3E461D99554A48A4959DE609 /* SplashScreen.storyboard in Resources */,
-				3CFD6A8F5D2DBC9A25813698 /* PrivacyInfo.xcprivacy in Resources */,
+				FB1C986CF192C4F2E5778421 /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -233,14 +233,52 @@
 			outputFileListPaths = (
 			);
 			outputPaths = (
-				"$(DERIVED_FILE_DIR)/Pods-ExpenseTracker-checkManifestLockResult.txt",
+				"$(DERIVED_FILE_DIR)/Pods-Spendwise-checkManifestLockResult.txt",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
-		1D290C3B82CD0335AF0E6E93 /* [Expo] Configure project */ = {
+		800E24972A6A228C8D4807E9 /* [CP] Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-Spendwise/Pods-Spendwise-resources.sh",
+				"${PODS_CONFIGURATION_BUILD_DIR}/EXApplication/ExpoApplication_privacy.bundle",
+				"${PODS_CONFIGURATION_BUILD_DIR}/EXConstants/EXConstants.bundle",
+				"${PODS_CONFIGURATION_BUILD_DIR}/EXConstants/ExpoConstants_privacy.bundle",
+				"${PODS_CONFIGURATION_BUILD_DIR}/EXNotifications/ExpoNotifications_privacy.bundle",
+				"${PODS_CONFIGURATION_BUILD_DIR}/ExpoFileSystem/ExpoFileSystem_privacy.bundle",
+				"${PODS_CONFIGURATION_BUILD_DIR}/RCT-Folly/RCT-Folly_privacy.bundle",
+				"${PODS_CONFIGURATION_BUILD_DIR}/RNPermissions/RNPermissionsPrivacyInfo.bundle",
+				"${PODS_CONFIGURATION_BUILD_DIR}/React-Core/React-Core_privacy.bundle",
+				"${PODS_CONFIGURATION_BUILD_DIR}/React-cxxreact/React-cxxreact_privacy.bundle",
+				"${PODS_CONFIGURATION_BUILD_DIR}/boost/boost_privacy.bundle",
+				"${PODS_CONFIGURATION_BUILD_DIR}/glog/glog_privacy.bundle",
+			);
+			name = "[CP] Copy Pods Resources";
+			outputPaths = (
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/ExpoApplication_privacy.bundle",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/EXConstants.bundle",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/ExpoConstants_privacy.bundle",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/ExpoNotifications_privacy.bundle",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/ExpoFileSystem_privacy.bundle",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/RCT-Folly_privacy.bundle",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/RNPermissionsPrivacyInfo.bundle",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/React-Core_privacy.bundle",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/React-cxxreact_privacy.bundle",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/boost_privacy.bundle",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/glog_privacy.bundle",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-Spendwise/Pods-Spendwise-resources.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		A92A5AEFE6A6C9B6CE6C9087 /* [Expo] Configure project */ = {
 			isa = PBXShellScriptBuildPhase;
 			alwaysOutOfDate = 1;
 			buildActionMask = 2147483647;
@@ -257,47 +295,15 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "# This script configures Expo modules and generates the modules provider file.\nbash -l -c \"./Pods/Target\\ Support\\ Files/Pods-ExpenseTracker/expo-configure-project.sh\"\n";
+			shellScript = "# This script configures Expo modules and generates the modules provider file.\nbash -l -c \"./Pods/Target\\ Support\\ Files/Pods-Spendwise/expo-configure-project.sh\"\n";
 		};
-		800E24972A6A228C8D4807E9 /* [CP] Copy Pods Resources */ = {
+		DA99F8BBDD2E2C850F1E3953 /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			inputPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-ExpenseTracker/Pods-ExpenseTracker-resources.sh",
-				"${PODS_CONFIGURATION_BUILD_DIR}/EXConstants/EXConstants.bundle",
-				"${PODS_CONFIGURATION_BUILD_DIR}/EXConstants/ExpoConstants_privacy.bundle",
-				"${PODS_CONFIGURATION_BUILD_DIR}/ExpoFileSystem/ExpoFileSystem_privacy.bundle",
-				"${PODS_CONFIGURATION_BUILD_DIR}/RCT-Folly/RCT-Folly_privacy.bundle",
-				"${PODS_CONFIGURATION_BUILD_DIR}/React-Core/React-Core_privacy.bundle",
-				"${PODS_CONFIGURATION_BUILD_DIR}/React-cxxreact/React-cxxreact_privacy.bundle",
-				"${PODS_CONFIGURATION_BUILD_DIR}/boost/boost_privacy.bundle",
-				"${PODS_CONFIGURATION_BUILD_DIR}/glog/glog_privacy.bundle",
-			);
-			name = "[CP] Copy Pods Resources";
-			outputPaths = (
-				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/EXConstants.bundle",
-				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/ExpoConstants_privacy.bundle",
-				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/ExpoFileSystem_privacy.bundle",
-				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/RCT-Folly_privacy.bundle",
-				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/React-Core_privacy.bundle",
-				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/React-cxxreact_privacy.bundle",
-				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/boost_privacy.bundle",
-				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/glog_privacy.bundle",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-ExpenseTracker/Pods-ExpenseTracker-resources.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
-		A7135B608C16BBB261E8F94C /* [CP] Embed Pods Frameworks */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-ExpenseTracker/Pods-ExpenseTracker-frameworks.sh",
+				"${PODS_ROOT}/Target Support Files/Pods-Spendwise/Pods-Spendwise-frameworks.sh",
 				"${PODS_XCFRAMEWORKS_BUILD_DIR}/hermes-engine/Pre-built/hermes.framework/hermes",
 			);
 			name = "[CP] Embed Pods Frameworks";
@@ -306,7 +312,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-ExpenseTracker/Pods-ExpenseTracker-frameworks.sh\"\n";
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-Spendwise/Pods-Spendwise-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */
@@ -317,7 +323,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				F11748422D0307B40044C1D9 /* AppDelegate.swift in Sources */,
-				2BD64F443295635B02A23EC2 /* ExpoModulesProvider.swift in Sources */,
+				A513E6DC2B49B41A99FBAE10 /* ExpoModulesProvider.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -326,18 +332,18 @@
 /* Begin XCBuildConfiguration section */
 		13B07F941A680F5B00A75B9A /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 80E4A7CCE5D82F9C37984E56 /* Pods-ExpenseTracker.debug.xcconfig */;
+			baseConfigurationReference = 87E0AE8759A0431C6FA72A1B /* Pods-Spendwise.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
-				CODE_SIGN_ENTITLEMENTS = ExpenseTracker/ExpenseTracker.entitlements;
+				CODE_SIGN_ENTITLEMENTS = Spendwise/Spendwise.entitlements;
 				CURRENT_PROJECT_VERSION = 1;
 				ENABLE_BITCODE = NO;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"$(inherited)",
 					"FB_SONARKIT_ENABLED=1",
 				);
-				INFOPLIST_FILE = ExpenseTracker/Info.plist;
+				INFOPLIST_FILE = Spendwise/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -351,8 +357,8 @@
 				);
 				OTHER_SWIFT_FLAGS = "$(inherited) -D EXPO_CONFIGURATION_DEBUG";
 				PRODUCT_BUNDLE_IDENTIFIER = com.anonymous.ExpenseTracker;
-				PRODUCT_NAME = ExpenseTracker;
-				SWIFT_OBJC_BRIDGING_HEADER = "ExpenseTracker/ExpenseTracker-Bridging-Header.h";
+				PRODUCT_NAME = Spendwise;
+				SWIFT_OBJC_BRIDGING_HEADER = "Spendwise/Spendwise-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -362,13 +368,13 @@
 		};
 		13B07F951A680F5B00A75B9A /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 1E02D1B75721C16486EDF844 /* Pods-ExpenseTracker.release.xcconfig */;
+			baseConfigurationReference = 49318C7F5A76EF6C1003770F /* Pods-Spendwise.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
-				CODE_SIGN_ENTITLEMENTS = ExpenseTracker/ExpenseTracker.entitlements;
+				CODE_SIGN_ENTITLEMENTS = Spendwise/Spendwise.entitlements;
 				CURRENT_PROJECT_VERSION = 1;
-				INFOPLIST_FILE = ExpenseTracker/Info.plist;
+				INFOPLIST_FILE = Spendwise/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -382,8 +388,8 @@
 				);
 				OTHER_SWIFT_FLAGS = "$(inherited) -D EXPO_CONFIGURATION_RELEASE";
 				PRODUCT_BUNDLE_IDENTIFIER = com.anonymous.ExpenseTracker;
-				PRODUCT_NAME = ExpenseTracker;
-				SWIFT_OBJC_BRIDGING_HEADER = "ExpenseTracker/ExpenseTracker-Bridging-Header.h";
+				PRODUCT_NAME = Spendwise;
+				SWIFT_OBJC_BRIDGING_HEADER = "Spendwise/Spendwise-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VERSIONING_SYSTEM = "apple-generic";
@@ -517,7 +523,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "ExpenseTracker" */ = {
+		13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "Spendwise" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				13B07F941A680F5B00A75B9A /* Debug */,
@@ -526,7 +532,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		83CBB9FA1A601CBA00E9B192 /* Build configuration list for PBXProject "ExpenseTracker" */ = {
+		83CBB9FA1A601CBA00E9B192 /* Build configuration list for PBXProject "Spendwise" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				83CBBA201A601CBA00E9B192 /* Debug */,

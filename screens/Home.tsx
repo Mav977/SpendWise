@@ -1,4 +1,4 @@
-import { View, Text, ScrollView, TextStyle, StyleSheet, Button, Platform, Linking, Alert, TouchableOpacity, RefreshControl, FlatList } from 'react-native'
+import { View, Text, ScrollView, TextStyle, StyleSheet, Button, Platform, Linking, Alert, TouchableOpacity, RefreshControl, FlatList, ToastAndroid } from 'react-native'
 import React, { useCallback, useEffect, useState,useLayoutEffect } from 'react'
 import { Category, RootStackParamList, Transaction, TransactionsByMonth } from '../types';
 import { useSQLiteContext } from 'expo-sqlite';
@@ -67,34 +67,67 @@ useEffect(() => {
   };
 }, []);
     
+
 useEffect(() => {
   const checkNotificationAccess = async () => {
     if (Platform.OS === 'android') {
-      const status = await NotificationListener.getPermissionStatus();
+      try {
+        const status = await NotificationListener.getPermissionStatus();
+        console.log("🔍 Notification Access Status:", status);
 
-      if (status !== 'authorized') {
-        Alert.alert(
-          "Notification Access Required",
-          "To detect UPI messages, please grant Notification Access to this app.",
-          [
-            {
-              text: "Cancel",
-              style: "cancel",
-            },
-            {
-              text: "Open Settings",
-              onPress: () => {
-                // Open notification access settings
-                IntentLauncher.startActivityAsync(
-                  IntentLauncher.ActivityAction.NOTIFICATION_LISTENER_SETTINGS
-                );
+        if (status !== 'authorized') {
+          ToastAndroid.show("Permission denied!", ToastAndroid.LONG);
+          
+          // Delay the alert to ensure it's shown properly
+          setTimeout(() => {
+            Alert.alert(
+              "Notification Access Required",
+              "To detect UPI messages, please grant Notification Access to this app.\n\nIMPORTANT: Among the 2 Spendwise apps, choose the second one.",
+          
+              [
+                {
+                  text: "Cancel",
+                  style: "cancel",
+                },
+                {
+                  text: "Open Settings",
+                  onPress: () => {
+                    IntentLauncher.startActivityAsync(
+                      IntentLauncher.ActivityAction.NOTIFICATION_LISTENER_SETTINGS
+                    );
+                  },
+                },
+              ],
+              { cancelable: true }
+            );
+          }, 500); // Delay ensures the UI is ready
+        } else {
+          console.log("✅ Notification access is already granted");
+        }
+      } catch (e) {
+        console.warn("❌ Error checking notification access:", e);
+        // As a fallback, show the alert anyway
+        setTimeout(() => {
+          Alert.alert(
+            "Notification Access Required",
+            "Could not verify notification access. Please grant access manually.",
+            [
+              {
+                text: "Cancel",
+                style: "cancel",
               },
-            },
-          ],
-          { cancelable: true }
-        );
-      } else {
-        console.log("✅ Notification permission is already granted");
+              {
+                text: "Open Settings",
+                onPress: () => {
+                  IntentLauncher.startActivityAsync(
+                    IntentLauncher.ActivityAction.NOTIFICATION_LISTENER_SETTINGS
+                  );
+                },
+              },
+            ],
+            { cancelable: true }
+          );
+        }, 500);
       }
     }
   };
@@ -228,6 +261,7 @@ async function handleAddCategory(name: string, type: string) {
           </Text>
           <Button title="Test Categorise Screen" onPress={testNavigateToCategories} />
         </Card> */}
+        
         <AddTransaction
           insertTransaction={insertTransaction}
           deleteCategory={deleteCategory}
