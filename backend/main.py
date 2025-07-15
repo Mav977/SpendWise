@@ -102,7 +102,7 @@ ONLY RETURN JSON
 
         return parsed
     except Exception as e:
-        logger.exception("❌ Error while handling /ask-gemini request")
+        logger.exception(" Error while handling /ask-gemini request")
         return {"error": str(e)}
 
 
@@ -135,5 +135,9 @@ Return ONLY the cleaned name, like:
         logger.info(f"Cleaned description: {cleaned}")
         return cleaned
     except Exception as e:
-        logger.exception("❌ Error cleaning description")
+        logger.exception(" Error cleaning description")
         return "Unknown"
+
+@app.get("/")
+def read_root():
+    return {"message": "Backend is live!"}
