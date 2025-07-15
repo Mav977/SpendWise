@@ -92,6 +92,7 @@ useLayoutEffect(() => {
 />
 
       {selectedIndex === 0 && (
+        
         <FlatList
         style={{ marginBottom: 30 }}
           ItemSeparatorComponent={() => <View style={{ height: 12 }} />}
@@ -120,6 +121,7 @@ useLayoutEffect(() => {
             flexGrow: 1,
             backgroundColor: "#F2E7FF",
           }}
+          ListHeaderComponent={<Text style={{ fontSize: 24, fontWeight: "bold", marginBottom: 16, textAlign: "center" }}>Monthly Analysis</Text>}
         />
       )}
       {selectedIndex === 1 && (

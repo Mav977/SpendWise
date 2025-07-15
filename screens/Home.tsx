@@ -114,6 +114,7 @@ useEffect(() => {
     //useState<Category[]>([]); means categories is an array of type Category (taken from types.ts)
     const [categories,setCategories]=useState<Category[]>([]);
     const [transactions, setTransactions] = useState<Transaction[]>([]);
+    const [allTransactions, setAllTransactions] = useState<Transaction[]>([]);
      const [transactionsByMonth, setTransactionsByMonth] =
     React.useState<TransactionsByMonth>({
       totalExpenses: 0,
@@ -125,8 +126,9 @@ useEffect(() => {
     useEffect(()=>{db.withTransactionAsync(async()=>await getData())},[db]);
 
     async function getData() {
-  const { transactions, categories, monthlySummary } = await getAllAppData(db);
+  const { transactions, allTransactions,categories, monthlySummary } = await getAllAppData(db);
   setTransactions(transactions);
+setAllTransactions(allTransactions);
   setCategories(categories);
   setTransactionsByMonth(monthlySummary);
   }
@@ -197,7 +199,7 @@ async function handleAddCategory(name: string, type: string) {
    return (
   <FlatList
   ItemSeparatorComponent={() => <View style={{ height: 12 }} />}
-    data={transactions}
+    data={allTransactions}
     keyExtractor={(item) => item.id.toString()}
     renderItem={({ item }) => {
       const categoryForCurrentItem = categories.find(

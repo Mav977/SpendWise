@@ -24,9 +24,7 @@ export async function addCategory(
     return;
   }
 
-  await db.withTransactionAsync(async () => {
-    await db.runAsync(`INSERT INTO Categories (name, type) VALUES (?, ?)`, [trimmedName, type]);
-  });
+  await db.runAsync(`INSERT INTO Categories (name, type) VALUES (?, ?)`, [trimmedName, type]);
 
   // Fetch and return updated list
   const updatedData = await getAllAppData(db);

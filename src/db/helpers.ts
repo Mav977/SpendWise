@@ -1,28 +1,38 @@
-// helpers.ts
 import { SQLiteDatabase } from 'expo-sqlite';
 import { Category, Transaction, TransactionsByMonth } from '../../types';
 
 export async function getAllAppData(
   db: SQLiteDatabase
 ): Promise<{
-  transactions: Transaction[];
+  transactions: Transaction[]; // now: current month transactions
+  allTransactions: Transaction[]; // all transactions in DB
   categories: Category[];
   monthlySummary: TransactionsByMonth;
 }> {
-  const transactions = await db.getAllAsync<Transaction>(
-    `SELECT * FROM Transactions ORDER BY date DESC LIMIT 30;`
+  // 🔹 Get all transactions
+  const allTransactions = await db.getAllAsync<Transaction>(
+    `SELECT * FROM Transactions ORDER BY date DESC;`
   );
 
+  // 🔹 Get categories
   const categories = await db.getAllAsync<Category>(`SELECT * FROM Categories;`);
 
+  // 🔹 Calculate current month boundaries
   const now = new Date();
   const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
   const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
   endOfMonth.setMilliseconds(endOfMonth.getMilliseconds() - 1);
 
-  const start = Math.floor(startOfMonth.getTime() / 1000);
-  const end = Math.floor(endOfMonth.getTime() / 1000);
+  const startTimestamp = startOfMonth.getTime();
+  const endTimestamp = endOfMonth.getTime();
 
+  // 🔹 Get transactions of the current month
+  const transactions = await db.getAllAsync<Transaction>(
+    `SELECT * FROM Transactions WHERE date >= ? AND date <= ? ORDER BY date DESC;`,
+    [startTimestamp, endTimestamp]
+  );
+
+  // 🔹 Get total income and expense summary for current month
   const monthly = await db.getAllAsync<TransactionsByMonth>(
     `
       SELECT
@@ -31,11 +41,12 @@ export async function getAllAppData(
       FROM Transactions
       WHERE date >= ? AND date <= ?;
     `,
-    [start, end]
+    [startTimestamp, endTimestamp]
   );
 
   return {
-    transactions,
+    transactions,         // current month only
+    allTransactions,      // all from DB
     categories,
     monthlySummary: monthly[0],
   };

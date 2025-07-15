@@ -1,6 +1,6 @@
 export async function fetchAi(upimessage:string,categories: string[]) {
     try {
-        const res=await fetch("http://10.69.179.4:8000/ask-gemini",{
+        const res=await fetch("https://spendwise-wyyr.onrender.com/ask-gemini",{
             method:"POST",
             headers:{
                 "Content-Type": "application/json"

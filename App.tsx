@@ -78,12 +78,12 @@ const linking = {
 
 
 export default function App() {
-  useEffect(() => {
-    const reset = async () => {
-      await resetToAssetDB();
-    };
-    reset();
-  }, []);
+  // useEffect(() => {
+  //   const reset = async () => {
+  //     await resetToAssetDB();
+  //   };
+  //   reset();
+  // }, []);
   useEffect(() => {
    const subscription = Notifications.addNotificationResponseReceivedListener(response => {
   const deepLink = response.notification.request.content.data?.deepLink;

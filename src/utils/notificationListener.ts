@@ -195,8 +195,9 @@ const handleNotification = async (notification: any) => {
               );
             } else if (Number(ai.confidence_score) >= 9.5) {
               //add category
+              console.log("🔧 Going to add new category:", ai.category);
               await addCategory(db, ai.category, ai.type, () => {});
-
+              console.log("🔧 Added new category:", ai.category);
               await autoSave({
                 db,
                 receiver,

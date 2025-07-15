@@ -102,7 +102,10 @@ function CategoryItem({
   emoji: string;
 })  {
     return(
-        <View style={[styles.categoryContainer,{backgroundColor: categoryColor+'40'}]}>
+        <View style={[styles.categoryContainer,{backgroundColor: categoryColor? categoryColor+'40' : '#daff0acc', borderRadius: 10,
+    paddingHorizontal: 10,
+    paddingVertical: 3,
+    alignSelf: "flex-start"}]}>
         <Text>
             {emoji} {categoryInfo?.name}
         </Text>
