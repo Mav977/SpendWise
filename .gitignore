@@ -31,6 +31,10 @@ yarn-error.*
 *.pem
 backend/.env
 
+backend/venv/
+backend/__pycache__/
+*.pyc
+
 # local env files
 .env*.local
 
