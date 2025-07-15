@@ -226,7 +226,6 @@ async function handleAddCategory(name: string, type: string) {
           </Text>
           <Button title="Test Categorise Screen" onPress={testNavigateToCategories} />
         </Card> */}
-
         <AddTransaction
           insertTransaction={insertTransaction}
           deleteCategory={deleteCategory}
