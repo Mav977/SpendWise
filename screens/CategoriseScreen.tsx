@@ -26,7 +26,7 @@ const LIGHT_PURPLE_BACKGROUND = "rgb(223, 197, 250)";
 const CategoriseScreen = () => {
   const route = useRoute();
   const navigation = useNavigation();
-  const {
+  let {
     receiver,
     amount,
     ask,
@@ -44,6 +44,7 @@ const CategoriseScreen = () => {
     initialType: "Expense" | "Income";
   };
   const decodedReceiver = decodeURIComponent(receiver);
+  receiver = decodedReceiver; // Use the decoded receiver for display
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
   const [category, setCategory] = useState(initialCategory || "");
@@ -62,6 +63,10 @@ const CategoriseScreen = () => {
       const db = await getDB();
       const updatedData = await getAllAppData(db);
       setCategories(updatedData.categories);
+      // const rows = await db.getAllAsync(
+      //   "SELECT * FROM UPICategory"
+      // );
+      // console.log("UPICategory rows:", rows);
     };
     getCategories();
   }, []);
@@ -282,7 +287,7 @@ const CategoriseScreen = () => {
 
       <TextInput
         style={styles.input}
-        placeholder="Description of the merchant"
+        placeholder="Merchant name"
         value={description}
         onChangeText={setDescription}
         placeholderTextColor="#000"

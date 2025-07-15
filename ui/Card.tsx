@@ -1,7 +1,7 @@
 import { View, Text, ViewStyle } from 'react-native'
 import React from 'react'
 interface CardProps extends React.PropsWithChildren {
-style?:ViewStyle;
+ style?: ViewStyle | ViewStyle[];
 }
 const Card = ({children,style={}}:CardProps) => {
   return (

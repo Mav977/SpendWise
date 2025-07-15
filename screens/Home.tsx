@@ -1,5 +1,5 @@
 import { View, Text, ScrollView, TextStyle, StyleSheet, Button, Platform, Linking, Alert, TouchableOpacity, RefreshControl, FlatList } from 'react-native'
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useState,useLayoutEffect } from 'react'
 import { Category, RootStackParamList, Transaction, TransactionsByMonth } from '../types';
 import { useSQLiteContext } from 'expo-sqlite';
 import Card from "../ui/Card"
@@ -14,9 +14,9 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { getAllAppData } from '../src/db/helpers';
 import { addCategory } from '../src/db/addCategory';
 import TransactionsListItem from "../components/TransactionListItem"
-type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'Home'>;
 
-type HomeScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Home'>;
+
+type HomeScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'TabNavigation'>;
 
 
 const Home = () => {
@@ -31,6 +31,21 @@ const Home = () => {
     }
   }, [isFocused]); // Depend on isFocused
 const navigation = useNavigation<HomeScreenNavigationProp>();
+ useLayoutEffect(() => {
+     navigation.setOptions({
+       headerTitle: "Spendwise",
+       headerLargeTitle: true,
+       headerTransparent: Platform.OS === "ios" ? true : false,
+       headerBlurEffect: "light",
+       headerStyle: {
+         backgroundColor: "rgba(115, 0, 255, 0.72)",
+       },
+       headerTitleStyle: {
+         color: "#FFF",
+       },
+       // You can also set headerRight, headerLeft, etc. here if needed
+     });
+   }, [navigation]); 
 useEffect(() => {
   Notifications.requestPermissionsAsync().then(({ granted }) => {
     if (!granted) {

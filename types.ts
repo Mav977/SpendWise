@@ -1,3 +1,4 @@
+
 export interface Transaction {
   id: number;
   category_id: number;
@@ -26,7 +27,7 @@ export interface UPICategory {
   type: "Expense" | "Income";
 }
 export type RootStackParamList = {
-  Home: undefined;
+
   Categorise: {
     receiver?: string;
     amount: number;
@@ -36,4 +37,14 @@ export type RootStackParamList = {
     initialDescription?: string;
     initialType?: "Expense" | "Income";
   };
+   TabNavigation: {
+    screen?: 'Home' | 'Analytics';
+    params?: {
+      HomeScreen?: undefined;
+      AnalyticsScreen?: undefined;
+    };
+  };
+  Transactions: {
+    Transaction : Transaction[];
+  }
 };

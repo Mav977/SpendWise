@@ -42,7 +42,7 @@ const AddTransaction = ({
     await insertTransaction({
       category_id: categoryId,
       amount: Number(amount),
-      date: new Date().getTime() / 1000,
+      date: new Date().getTime() ,
       description,
       type: currentTab === 0 ? "Expense" : "Income",
     });
@@ -65,7 +65,7 @@ const AddTransaction = ({
             <TextInput
               placeholder="Rs.Amount"
               placeholderTextColor="#CCC"
-              style={{ fontSize: 32, marginBottom: 15, fontWeight: "bold" }}
+              style={{ fontSize: 32, marginBottom: 15, fontWeight: "bold",color: "#000" }}
               keyboardType="numeric"
               onChangeText={(text) => {
                 // Remove any non-numeric characters before setting the state
@@ -74,8 +74,9 @@ const AddTransaction = ({
               }}
             />
             <TextInput
-              placeholder="Description"
-              style={{ marginBottom: 15 }}
+              placeholder="Merchant name"
+              placeholderTextColor="#CCC"
+              style={{ fontSize: 18, marginBottom: 15,color: "#000" }}
               onChangeText={setDescription}
             />
             <Text style={{ marginBottom: 6 }}>Select a entry type</Text>
@@ -84,7 +85,7 @@ const AddTransaction = ({
               selectedIndex={currentTab}
                tintColor="#EEE" 
   backgroundColor="#FFFFFF" 
-  fontStyle={{ color: '#000' }} // 👈 Does NOT work — see note below
+  fontStyle={{ color: '#000' }} 
               onChange={(event) => {
                 setCurrentTab(event.nativeEvent.selectedSegmentIndex);
               }}

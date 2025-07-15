@@ -8,9 +8,9 @@ import { AutoSizeText, ResizeTextMode } from "react-native-auto-size-text";
 
 interface TransactionListItemProps {
   transaction: Transaction;
-  categoryInfo: Category | undefined;
-  onToggleType: (id: number, newType: "Expense" | "Income") => void;
-  onEdit : (transaction:Transaction) =>void
+  categoryInfo?: Category | undefined;
+  onToggleType?: (id: number, newType: "Expense" | "Income") => void;
+  onEdit?: (transaction:Transaction) =>void
 }
 const TransactionListItem = ({
   transaction,
@@ -48,7 +48,7 @@ const TransactionListItem = ({
     <View style={styles.actionsRow}>
   <TouchableOpacity
     style={styles.editButton}
-    onPress={() => onEdit(transaction)}
+    onPress={() => onEdit?.(transaction)}
   >
     <Text style={styles.editText}>Edit</Text>
   </TouchableOpacity>
@@ -56,7 +56,7 @@ const TransactionListItem = ({
   <TouchableOpacity
     style={styles.flipButton}
     onPress={() =>
-      onToggleType(
+      onToggleType?.(
         transaction.id,
         transaction.type === "Expense" ? "Income" : "Expense"
       )

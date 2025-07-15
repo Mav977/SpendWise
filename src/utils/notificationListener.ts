@@ -113,6 +113,7 @@ const handleNotification = async (notification: any) => {
       );
 
       if (rows.length > 0) {
+        
         const row = rows[0];
         //@ts-ignore
         const ask = row.alwaysAsk;
@@ -157,12 +158,12 @@ const handleNotification = async (notification: any) => {
             `UPDATE UPICategory
              SET receiver = ?, category = ?, description = ?, alwaysAsk = ?, type = ?
              WHERE id = ?`,
-            [
-              receiver, 
-              upiCat.category, 
-              upiCat.alwaysAsk,
-              upiCat.type, 
-              upiCat.id
+            [receiver,        // The new receiver from the notification
+              upiCat.category,   // Keep existing category from upiCat
+              upiCat.description, // Keep existing description from upiCat
+              upiCat.alwaysAsk,  // Keep existing alwaysAsk from upiCat
+              upiCat.type,       // Keep existing type from upiCat
+              upiCat.id          // ID of the row to update
             ]
           );
           console.log(" Matched AI description to existing UPICategory, updated receiver & details:", receiver, description);

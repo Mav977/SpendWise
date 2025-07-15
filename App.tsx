@@ -12,12 +12,16 @@ import { createRef, Suspense, useEffect } from "react";
 import { SQLiteProvider, useSQLiteContext } from "expo-sqlite";
 import { NavigationContainer, NavigationContainerRef } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import Home from "./screens/Home";
 import CategoriseScreen from "./screens/CategoriseScreen"
 import * as Linking from 'expo-linking';
 import * as Notifications from 'expo-notifications';
 import { RootStackParamList } from "./types";
 import { useNavigationContainerRef } from '@react-navigation/native';
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import Analytics from "./screens/Analytics";
+import SpTransactions from "./screens/SpTransactions";
 
  // adjust alpha (0.1–0.3 for more/less opacity)
  const LIGHT_PURPLE="#F2E7FE";
@@ -46,12 +50,13 @@ Notifications.setNotificationHandler({
     shouldShowList: true,
   }),
 });
+const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator<RootStackParamList>();
 const linking = {
   prefixes: [Linking.createURL('/')],
   config: {
     screens: {
-      Home: '',
+      
       Categorise: {
         path: 'categorise',
         parse: {
@@ -60,18 +65,25 @@ const linking = {
           
         },
       },
+      TabNavigation: {
+        path: 'tabs', // e.g., your-app://tabs/home or your-app://tabs/analytics
+        screens: {
+          HomeScreen: 'home',
+          AnalyticsScreen: 'analytics', // Assuming you'll name your analytics tab screen AnalyticsScreen
+        },
+      },
     },
   },
 };
 
 
 export default function App() {
-  // useEffect(() => {
-  //   const reset = async () => {
-  //     await resetToAssetDB();
-  //   };
-  //   reset();
-  // }, []);
+  useEffect(() => {
+    const reset = async () => {
+      await resetToAssetDB();
+    };
+    reset();
+  }, []);
   useEffect(() => {
    const subscription = Notifications.addNotificationResponseReceivedListener(response => {
   const deepLink = response.notification.request.content.data?.deepLink;
@@ -86,10 +98,10 @@ export default function App() {
         console.log("🔗 Navigating to Categorise screen with:", { receiver, amount, ask });
         navigationRef.current?.navigate('Categorise', { receiver, amount, ask });
       } else {
-        console.log("⚠️ Missing or invalid parameters in deep link");
+        console.log(" Missing or invalid parameters in deep link");
       }
     } catch (e) {
-      console.error("❌ Invalid deep link URL:", deepLink);
+      console.error(" Invalid deep link URL:", deepLink);
     }
   }
 });
@@ -132,24 +144,45 @@ export default function App() {
              }
             }}
           >
-            <Stack.Screen
-              name="Home"
-              component={Home}
-              options={{
-                headerTitle: "Spendwise",
-                headerLargeTitle: true,
-                headerTransparent: Platform.OS === "ios" ? true : false,
-                headerBlurEffect: "light",
-              }}
-            />
+            
+            <Stack.Screen name="TabNavigation" component={TabNavigation} options={{headerShown:false}}/>
             <Stack.Screen name="Categorise" component={CategoriseScreen} />
+            <Stack.Screen name="Transactions" component={SpTransactions} />
           </Stack.Navigator>
         </SQLiteProvider>
       </Suspense>
     </NavigationContainer>
   );
 }
-
+function TabNavigation() {
+  return(
+    <Tab.Navigator initialRouteName="Home" >
+     <Tab.Screen
+        name="Home" 
+        component={Home}
+        options={{
+         
+          tabBarLabel: "Home",
+          tabBarIcon: ({ color, size }) => (
+            
+            <MaterialCommunityIcons name="home" size={size} color={color} />
+          ),
+        }}
+      />
+       <Tab.Screen
+        name="Analytics" 
+        component={Analytics} 
+        options={{
+          
+          tabBarLabel: "Analytics",
+          tabBarIcon: ({ color, size }) => (
+           <MaterialCommunityIcons name="google-analytics" size={size} color={color} />
+          ),
+        }}
+      />
+    </Tab.Navigator>
+  )
+}
 const styles = StyleSheet.create({
   container: {
     flex: 1,
