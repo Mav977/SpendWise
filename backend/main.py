@@ -9,7 +9,7 @@ from dotenv import load_dotenv
 import os
 from typing import List
 
-# 🔹 Setup logging
+
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(message)s"
