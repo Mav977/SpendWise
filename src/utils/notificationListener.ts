@@ -66,6 +66,14 @@ async function autoSave({
   console.log("💾 Auto-inserted transaction for", receiver);
   DeviceEventEmitter.emit("transactionInserted");
   console.log("📢 Emitted event: transactionInserted");
+    await Notifications.scheduleNotificationAsync({
+    content: {
+      title: "Auto-inserted transaction",
+      body: `for ${receiver}`
+      
+    },
+    trigger: null,
+  });
 }
 
 const handleNotification = async (notification: any) => {

@@ -129,20 +129,20 @@ const CategoriseScreen = () => {
     const db = await getDB();
 
     await db.withTransactionAsync(async () => {
-      if (receiver) {
+      if (receiver || description) {
         const existing = await db.getAllAsync(
-          `SELECT * FROM UPICategory WHERE receiver = ?`,
-          [receiver]
-        );
+    `SELECT * FROM UPICategory WHERE receiver = ? OR description = ?`,
+    [receiver, description]
+  );
 
         if (existing.length > 0) {
           // Receiver already exists — update
-          await db.runAsync(
-            `UPDATE UPICategory
-       SET category = ?, description = ?, alwaysAsk = ?
-       WHERE receiver = ?`,
-            [category, description, alwaysAsk ? 1 : 0, receiver]
-          );
+         await db.runAsync(
+  `UPDATE UPICategory
+   SET category = ?, description = ?, alwaysAsk = ?
+   WHERE receiver = ? OR description = ?`,
+  [category, description, alwaysAsk ? 1 : 0, receiver, description]
+);
         } else {
           // New receiver — insert
           await db.runAsync(
@@ -204,7 +204,7 @@ const CategoriseScreen = () => {
     <View style={styles.container}>
       {receiver && (
         <Text style={styles.label}>
-          Receiver: <Text style={styles.value}>{decodedReceiver}</Text>
+          Receiver: <Text style={styles.value}>{ (receiver=="undefined")? description : receiver}</Text>
         </Text>
       )}
       <Text style={styles.label}>

@@ -132,7 +132,7 @@ function TransactionInfo({
       >
         {description}
       </Text>
-      <Text>Transaction number {id}</Text>
+      
       <Text style={{ fontSize: 12, color: "gray" }}>
         {new Date(date).toDateString()}
       </Text>
