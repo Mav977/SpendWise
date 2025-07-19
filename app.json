@@ -1,10 +1,12 @@
 {
   "expo": {
     "name": "SpendWise",
+    "scheme": "SpendWise",
     "slug": "SpendWise",
+    "deepLinks": true,
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/icons.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "splash": {
@@ -13,17 +15,29 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.mav977.SpendWise"
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
+        "foregroundImage": "./assets/icons.png",
         "backgroundColor": "#ffffff"
       },
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "package": "com.mav977.SpendWise"
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "plugins": [
+      "expo-sqlite",
+      "expo-asset"
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "83f6a585-4cec-4bab-8fc5-d9084b3c4f78"
+      }
+    },
+    "owner": "mav_977"
   }
 }

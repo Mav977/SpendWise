@@ -3,16 +3,40 @@
   "version": "1.0.0",
   "main": "index.ts",
   "scripts": {
+   
     "start": "expo start",
-    "android": "expo start --android",
-    "ios": "expo start --ios",
+    "android": "expo run:android",
+    "ios": "expo run:ios",
     "web": "expo start --web"
+   
   },
   "dependencies": {
-    "expo": "~53.0.20",
+    "@expo/metro-runtime": "~5.0.4",
+    "@expo/vector-icons": "^14.1.0",
+    "@react-native-segmented-control/segmented-control": "^2.5.7",
+    "@react-navigation/bottom-tabs": "^7.4.2",
+    "@react-navigation/native": "^7.1.13",
+    "@react-navigation/native-stack": "^7.3.18",
+    "expo": "~53.0.17",
+     "expo-asset": "~11.1.5",
+    "expo-file-system": "~18.1.10",
+    "expo-intent-launcher": "~12.1.5",
+    "expo-linking": "~7.1.7",
+    "expo-notifications": "^0.31.4",
+    "expo-sms": "~13.1.4",
+    "expo-sqlite": "~15.2.13",
     "expo-status-bar": "~2.2.3",
     "react": "19.0.0",
-    "react-native": "0.79.5"
+    "react-dom": "19.0.0",
+    "react-native": "0.79.5",
+     "react-native-auto-size-text": "^1.1.1",
+    "react-native-chart-kit": "^6.12.0",
+    "react-native-get-sms-android": "^2.1.0",
+    "react-native-permissions": "^5.4.1",
+    "react-native-safe-area-context": "5.4.0",
+    "react-native-screens": "~4.11.1",
+    "react-native-web": "^0.20.0",
+    "react-native-android-notification-listener": "^5.0.1"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
