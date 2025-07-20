@@ -278,8 +278,8 @@ async function handleAddCategory(name: string, type: string) {
           totalIncome={transactionsByMonth.totalIncome}
         />
 
-        <Text style={{ fontSize: 22, fontWeight: "bold", marginVertical: 10, color: theme.text }}>
-          All Transactions
+        <Text style={{ fontSize: 22, fontWeight: "bold", marginVertical: 10 }}>
+          Today's Transactions
         </Text>
       </>
     }

@@ -37,8 +37,8 @@ function TransactionSummary({
           {formatMoney(totalIncome)}
         </Text>
       </Text>
-      <Text style={[styles.summaryText, { color: theme.text }]}>
-        Total Expenses:{" "}
+      <Text style={styles.summaryText}>
+        Expenses:{" "}
         <Text style={getMoneyTextStyle(totalExpenses)}>
           {formatMoney(totalExpenses)}
         </Text>
