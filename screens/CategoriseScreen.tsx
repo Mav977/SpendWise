@@ -8,12 +8,13 @@ import {
   ActivityIndicator,
 } from "react-native";
 import React, { useEffect, useState, useRef } from "react";
-import { useRoute, useNavigation } from "@react-navigation/native";
+import { useRoute, useNavigation, RouteProp } from "@react-navigation/native";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import * as SQLite from "expo-sqlite";
 import { getDB } from "../db";
 import SegmentedControl from "@react-native-segmented-control/segmented-control";
 import AddCategory from "../components/AddCategory";
-import { Category } from "../types";
+import { Category, RootStackParamList } from "../types";
 import { addCategory } from "../src/db/addCategory";
 import { getAllAppData } from "../src/db/helpers";
 import { fetchAi } from "../src/utils/fetchAI";
@@ -23,9 +24,12 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 const PURPLE_COLOR = "rgba(115, 0, 255, 0.72)"; // Your header purple
 const LIGHT_PURPLE_BACKGROUND = "rgb(223, 197, 250)";
 
+type CategoriseScreenRouteProp = RouteProp<RootStackParamList, "Categorise">;
+
 const CategoriseScreen = () => {
-  const route = useRoute();
-  const navigation = useNavigation();
+  const route = useRoute<CategoriseScreenRouteProp>();
+  const navigation =
+    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   let {
     receiver,
     amount,
@@ -130,49 +134,35 @@ const CategoriseScreen = () => {
 
     await db.withTransactionAsync(async () => {
       if (receiver || description) {
-        const existing = await db.getAllAsync(
-    `SELECT * FROM UPICategory WHERE receiver = ? OR description = ?`,
-    [receiver, description]
-  );
+        const existing = await db.getFirstAsync<{ id: number }>(
+          `SELECT id FROM UPICategory WHERE receiver = ?`,
+          [receiver]
+        );
 
-        if (existing.length > 0) {
-          // Receiver already exists — update
-         await db.runAsync(
-  `UPDATE UPICategory
-   SET category = ?, description = ?, alwaysAsk = ?
-   WHERE receiver = ? OR description = ?`,
-  [category, description, alwaysAsk ? 1 : 0, receiver, description]
-);
-        } else {
-          // New receiver — insert
+        if (existing) {
           await db.runAsync(
-            `INSERT INTO UPICategory (receiver, category, description, alwaysAsk, type)
-       VALUES (?, ?, ?, ?, ?)`,
-            [
-              receiver,
-              category,
-              description,
-              alwaysAsk ? 1 : 0,
-              transactionType,
-            ]
+            `UPDATE UPICategory SET category = ?, description = ?, alwaysAsk = ? WHERE id = ?`,
+            [category, description, alwaysAsk ? 1 : 0, existing.id]
+          );
+        } else {
+          await db.runAsync(
+            `INSERT INTO UPICategory (receiver, category, description, alwaysAsk, type) VALUES (?, ?, ?, ?, ?)`,
+            [receiver, category, description, alwaysAsk ? 1 : 0, transactionType]
           );
         }
       }
-      const cat = await db.getAllAsync(
+
+      const cat = await db.getFirstAsync<{ id: number }>(
         "SELECT id FROM Categories WHERE name = ?",
         [category]
       );
 
-      if (cat.length > 0) {
+      if (cat) {
         if (transactionId) {
-          console.log("Reached here");
           await db.runAsync(
-            `UPDATE Transactions
-             SET category_id = ?, amount = ?, date = ?, description = ?, type = ?
-             WHERE id = ?`,
-            
-            [//@ts-ignore
-              cat[0].id,
+            `UPDATE Transactions SET category_id = ?, amount = ?, date = ?, description = ?, type = ? WHERE id = ?`,
+            [
+              cat.id,
               amount,
               Date.now(),
               description || receiver,
@@ -180,19 +170,10 @@ const CategoriseScreen = () => {
               transactionId,
             ]
           );
-          console.log(" Updated transaction:", transactionId);
         } else {
           await db.runAsync(
-            `INSERT INTO Transactions (category_id, amount, date, description, type)
-           VALUES (?, ?, ?, ?, ?)`,
-            [
-              //@ts-ignore
-              cat[0].id,
-              amount,
-              Date.now(),
-              description || receiver,
-              transactionType,
-            ]
+            `INSERT INTO Transactions (category_id, amount, date, description, type) VALUES (?, ?, ?, ?, ?)`,
+            [cat.id, amount, Date.now(), description || receiver, transactionType]
           );
         }
       }
@@ -202,9 +183,9 @@ const CategoriseScreen = () => {
 
   return (
     <View style={styles.container}>
-      {receiver && (
+      {receiver && receiver !== "undefined" && (
         <Text style={styles.label}>
-          Receiver: <Text style={styles.value}>{ (receiver=="undefined")? description : receiver}</Text>
+          Receiver: <Text style={styles.value}>{description || receiver}</Text>
         </Text>
       )}
       <Text style={styles.label}>

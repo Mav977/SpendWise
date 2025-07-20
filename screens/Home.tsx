@@ -4,6 +4,7 @@ import { Category, RootStackParamList, Transaction, TransactionsByMonth } from '
 import { useSQLiteContext } from 'expo-sqlite';
 import Card from "../ui/Card"
 import AddTransaction from '../ui/AddTransaction';
+import TransactionSummary from '../components/TransactionSummary';
 import * as IntentLauncher from 'expo-intent-launcher';
 import NotificationListener from 'react-native-android-notification-listener';
 import * as FileSystem from 'expo-file-system';
@@ -156,7 +157,9 @@ useEffect(() => {
 
     const db=useSQLiteContext();
 
-    useEffect(()=>{db.withTransactionAsync(async()=>await getData())},[db]);
+    useEffect(()=>{
+        db.withTransactionAsync(async()=>await getData())
+    },[db, isFocused]);
 
     async function getData() {
   const { transactions, allTransactions,categories, monthlySummary } = await getAllAppData(db);
@@ -220,7 +223,7 @@ async function handleAddCategory(name: string, type: string) {
 
  const handleEditTransaction=(transaction:Transaction)=>{
   navigation.navigate('Categorise', {
-    
+      receiver: "undefined",
       amount: transaction.amount,
       ask:0,
     transactionId: transaction.id,
@@ -255,13 +258,6 @@ async function handleAddCategory(name: string, type: string) {
     }}
     ListHeaderComponent={
       <>
-        {/* <Card style={{ marginBottom: 16, padding: 16 }}>
-          <Text style={{ fontSize: 18, fontWeight: "bold", marginBottom: 10 }}>
-            Debug Navigation
-          </Text>
-          <Button title="Test Categorise Screen" onPress={testNavigateToCategories} />
-        </Card> */}
-        
         <AddTransaction
           insertTransaction={insertTransaction}
           deleteCategory={deleteCategory}
@@ -287,77 +283,4 @@ async function handleAddCategory(name: string, type: string) {
 
 }
 
-function TransactionSummary({
-  totalIncome,
-  totalExpenses,
-}: TransactionsByMonth) {
-  const savings = totalIncome - totalExpenses;
-  const readablePeriod = new Date().toLocaleDateString("default", {
-    month: "long",
-    year: "numeric",
-  });
-
-  // Function to determine the style based on the value (positive or negative)
-  const getMoneyTextStyle = (value: number): TextStyle=> ({
-    fontWeight: "bold",
-    color: value < 0 ? "#ff4500" : "#2e8b57", // Red for negative, custom green for positive
-  });
-
-  // Helper function to format monetary values
-  const formatMoney = (value: number) => {
-    const absValue = Math.abs(value).toFixed(2);
-    return `Rs ${value < 0 ? "-" : ""}${absValue}`;
-  };
-    return (
-    
-      <Card style={styles.container}>
-        <Text style={styles.periodTitle}>Summary for {readablePeriod}</Text>
-        
-        <Text style={styles.summaryText}>
-          Income:{" "}
-          <Text style={getMoneyTextStyle(totalIncome)}>
-            {formatMoney(totalIncome)}
-          </Text>
-        </Text>
-        <Text style={styles.summaryText}>
-          Total Expenses:{" "}
-          <Text style={getMoneyTextStyle(totalExpenses)}>
-            {formatMoney(totalExpenses)}
-          </Text>
-        </Text>
-        <Text style={styles.summaryText}>
-          Savings:{" "}
-          <Text style={getMoneyTextStyle(savings)}>{formatMoney(savings)}</Text>
-        </Text>
-      </Card>
-    
-  );
-}
-const styles = StyleSheet.create({
-  container: {
-    marginBottom: 16,
-    paddingBottom: 7,
-  },
-  blur: {
-    width: "100%",
-    height: 110,
-    position: "absolute",
-    bottom: 0,
-    borderTopWidth: 1,
-    borderTopColor: "#00000010",
-    padding: 16,
-  },
-  periodTitle: {
-    fontSize: 20,
-    fontWeight: "bold",
-    color: "#333",
-    marginBottom: 15,
-  },
-  summaryText: {
-    fontSize: 18,
-    color: "#333",
-    marginBottom: 10,
-  },
-  // Removed moneyText style since we're now generating it dynamically
-});
 export default Home

@@ -85,7 +85,7 @@ const Analytics = () => {
                   <TouchableOpacity
                     key={item.id}
                     activeOpacity={0.7}
-                    onPress={() => navigation.navigate("Transactions", { Transaction: allTransactions })}
+                    onPress={() => navigation.navigate("Transactions", { transactions: allTransactions })}
                   >
                     <AnalyticsListItem amount={item.total} category={item} />
                   </TouchableOpacity>
