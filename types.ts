@@ -45,6 +45,8 @@ export type RootStackParamList = {
     };
   };
   Transactions: {
-    transactions : Transaction[];
-  }
+    transactions: Transaction[];
+    category: Category;
+    emoji: string;
+  };
 };

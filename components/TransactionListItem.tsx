@@ -24,49 +24,29 @@ const TransactionListItem = ({
   const emoji = categoryEmojies[categoryInfo?.name ?? "Default"];
     return (
     <Card>
-    <View style={styles.row}>
-   <View style={{width:'50%',gap:3}}>
-     <Amount
+      <View style={styles.row}>
+        <View style={{ width: "50%", gap: 3 }}>
+          <Amount
             amount={transaction.amount}
             color={color}
             iconName={iconName}
           />
-            <CategoryItem
-            categoryColor={categoryColor}
-            categoryInfo={categoryInfo}
-            emoji={emoji}
-          />
-         
-   </View>
-          
-          <TransactionInfo
+        </View>
+
+        <TransactionInfo
           id={transaction.id}
           date={transaction.date}
           description={transaction.description}
-          />
-    </View>
-    <View style={styles.actionsRow}>
-  <TouchableOpacity
-    style={styles.editButton}
-    onPress={() => onEdit?.(transaction)}
-  >
-    <Text style={styles.editText}>Edit</Text>
-  </TouchableOpacity>
-
-  <TouchableOpacity
-    style={styles.flipButton}
-    onPress={() =>
-      onToggleType?.(
-        transaction.id,
-        transaction.type === "Expense" ? "Income" : "Expense"
-      )
-    }
-  >
-    <Text style={styles.flipText}>
-      Flip to {transaction.type === "Expense" ? "Income" : "Expense"}
-    </Text>
-  </TouchableOpacity>
-</View>
+        />
+      </View>
+      <View style={styles.actionsRow}>
+        <TouchableOpacity
+          style={styles.editButton}
+          onPress={() => onEdit?.(transaction)}
+        >
+          <Text style={styles.editText}>Edit</Text>
+        </TouchableOpacity>
+      </View>
     </Card>
   );
 };
@@ -92,27 +72,6 @@ function Amount({iconName,color,amount}:{
 }
 
 
-function CategoryItem({
-    categoryInfo,
-    emoji,
-    categoryColor,
-}: {
-  categoryColor: string;
-  categoryInfo: Category | undefined;
-  emoji: string;
-})  {
-    return(
-        <View style={[styles.categoryContainer,{backgroundColor: categoryColor? categoryColor+'40' : '#daff0acc', borderRadius: 10,
-    paddingHorizontal: 10,
-    paddingVertical: 3,
-    alignSelf: "flex-start"}]}>
-        <Text>
-            {emoji} {categoryInfo?.name}
-        </Text>
-    </View>
-    )
-    
-}
 
 function TransactionInfo({
   id,

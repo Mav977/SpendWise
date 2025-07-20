@@ -72,6 +72,10 @@ useEffect(() => {
 useEffect(() => {
   const checkNotificationAccess = async () => {
     if (Platform.OS === 'android') {
+      if (!NotificationListener) {
+        console.warn("NotificationListener is not available");
+        return;
+      }
       try {
         const status = await NotificationListener.getPermissionStatus();
         console.log("🔍 Notification Access Status:", status);
@@ -148,10 +152,10 @@ useEffect(() => {
     //useState<Category[]>([]); means categories is an array of type Category (taken from types.ts)
     const [categories,setCategories]=useState<Category[]>([]);
     const [transactions, setTransactions] = useState<Transaction[]>([]);
-    const [allTransactions, setAllTransactions] = useState<Transaction[]>([]);
+    const [todayTransactions, setTodayTransactions] = useState<Transaction[]>([]);
      const [transactionsByMonth, setTransactionsByMonth] =
     React.useState<TransactionsByMonth>({
-      totalExpenses: 0,
+       totalExpenses: 0,
       totalIncome: 0,
     });
 
@@ -162,9 +166,10 @@ useEffect(() => {
     },[db, isFocused]);
 
     async function getData() {
-  const { transactions, allTransactions,categories, monthlySummary } = await getAllAppData(db);
+  const { transactions, todayTransactions,categories, monthlySummary } = await getAllAppData(db);
+  console.log("Fetched today's transactions:", todayTransactions);
   setTransactions(transactions);
-setAllTransactions(allTransactions);
+setTodayTransactions(todayTransactions);
   setCategories(categories);
   setTransactionsByMonth(monthlySummary);
   }
@@ -235,7 +240,7 @@ async function handleAddCategory(name: string, type: string) {
    return (
   <FlatList
   ItemSeparatorComponent={() => <View style={{ height: 12 }} />}
-    data={allTransactions}
+    data={todayTransactions}
     keyExtractor={(item) => item.id.toString()}
     renderItem={({ item }) => {
       const categoryForCurrentItem = categories.find(

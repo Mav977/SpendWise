@@ -1,21 +1,17 @@
-import { View, Text, FlatList } from 'react-native'
-import React, { useLayoutEffect } from 'react'
-import { Category, RootStackParamList, Transaction } from '../types';
-import TransactionListItem from '../components/TransactionListItem';
-import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { useSQLiteContext } from 'expo-sqlite';
-import { getAllAppData } from '../src/db/helpers';
-
+import { View, Text, FlatList } from "react-native";
+import React, { useLayoutEffect } from "react";
+import { RootStackParamList, Transaction } from "../types";
+import TransactionListItem from "../components/TransactionListItem";
+import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 
 type SpTransactionsRouteProp = RouteProp<RootStackParamList, "Transactions">;
 
 function SpTransactions() {
   const route = useRoute<SpTransactionsRouteProp>();
-  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const { transactions } = route.params;
-  const [categories, setCategories] = React.useState<Category[]>([]);
-  const db = useSQLiteContext();
+  const navigation =
+    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const { transactions, category, emoji } = route.params;
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -25,30 +21,42 @@ function SpTransactions() {
     });
   }, [navigation]);
 
-  React.useEffect(() => {
-    async function setup() {
-      const { categories } = await getAllAppData(db);
-      setCategories(categories);
-    }
-    setup();
-  }, []);
-
   return (
     <View style={{ flex: 1, backgroundColor: "#F2E7FF" }}>
+      <View
+        style={{
+          padding: 20,
+          flexDirection: "row",
+          justifyContent: "space-between",
+          alignItems: "center",
+          backgroundColor: "white",
+        }}
+      >
+        <Text style={{ fontSize: 24, fontWeight: "bold" }}>
+          {category.name}
+        </Text>
+        <Text style={{ fontSize: 24 }}>{emoji}</Text>
+      </View>
       <FlatList
         ItemSeparatorComponent={() => <View style={{ height: 12 }} />}
         data={transactions}
         keyExtractor={(item) => item.id.toString()}
         renderItem={({ item }) => {
-          const categoryForCurrentItem = categories.find(
-            (cat) => cat.id === item.category_id
-          );
           return (
             <TransactionListItem
               transaction={item}
-              categoryInfo={categoryForCurrentItem}
+              categoryInfo={category}
               onToggleType={() => {}}
-              onEdit={() => {}}
+              onEdit={(transaction) => {
+                navigation.navigate("Categorise", {
+                  amount: transaction.amount,
+                  ask: 0,
+                  transactionId: transaction.id,
+                  initialCategory: category.name,
+                  initialDescription: transaction.description,
+                  initialType: transaction.type,
+                });
+              }}
             />
           );
         }}
@@ -59,7 +67,7 @@ function SpTransactions() {
         }}
       />
     </View>
-  )
+  );
 }
 
 export default SpTransactions

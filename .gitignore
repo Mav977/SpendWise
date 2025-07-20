@@ -38,3 +38,5 @@ yarn-error.*
 
 package-lock.json
 yarn.lock
+
+env/

@@ -5,20 +5,27 @@ export async function getAllAppData(
   db: SQLiteDatabase
 ): Promise<{
   transactions: Transaction[]; // now: current month transactions
-  allTransactions: Transaction[]; // all transactions in DB
+  todayTransactions: Transaction[]; // all transactions in DB
   categories: Category[];
   monthlySummary: TransactionsByMonth;
 }> {
-  // 🔹 Get all transactions
-  const allTransactions = await db.getAllAsync<Transaction>(
-    `SELECT * FROM Transactions ORDER BY date DESC;`
+  // 🔹 Get today's transactions
+  const now = new Date();
+  const startOfDay = new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    now.getDate()
+  );
+  const startOfDayTimestamp = startOfDay.getTime();
+  const todayTransactions = await db.getAllAsync<Transaction>(
+    `SELECT * FROM Transactions WHERE date >= ? ORDER BY date DESC;`,
+    [startOfDayTimestamp]
   );
 
   // 🔹 Get categories
   const categories = await db.getAllAsync<Category>(`SELECT * FROM Categories;`);
 
   // 🔹 Calculate current month boundaries
-  const now = new Date();
   const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
   const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
   endOfMonth.setMilliseconds(endOfMonth.getMilliseconds() - 1);
@@ -45,8 +52,8 @@ export async function getAllAppData(
   );
 
   return {
-    transactions,         // current month only
-    allTransactions,      // all from DB
+    transactions, // current month only
+    todayTransactions, // today's transactions
     categories,
     monthlySummary: monthly[0],
   };

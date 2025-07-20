@@ -11,12 +11,12 @@ const AddTransaction = ({
   insertTransaction,
   deleteCategory,
   cat,
-  addCategory
+  addCategory,
 }: {
   insertTransaction: (transaction: Transaction) => Promise<void>;
   deleteCategory: (id: number) => Promise<void>;
-  cat: Category[]; 
-   addCategory: (name: string, type: string) => Promise<void>;
+  cat: Category[];
+  addCategory: (name: string, type: string) => Promise<void>;
 }) => {
   const [isAddingTransaction, setIsAddingTransaction] =
     React.useState<boolean>(false);
@@ -38,25 +38,26 @@ const AddTransaction = ({
     (category) => category.type === (currentTab === 0 ? "Expense" : "Income")
   );
   async function handleSave() {
-    // @ts-ignore
-    await insertTransaction({
-      category_id: categoryId,
+    const transactionToInsert = {
       amount: Number(amount),
-      date: new Date().getTime() ,
       description,
+      category_id: categoryId,
+      date: new Date().getTime(),
       type: currentTab === 0 ? "Expense" : "Income",
-    });
+    };
+    console.log("Inserting transaction:", transactionToInsert);
+    // @ts-ignore
+    await insertTransaction(transactionToInsert);
     setAmount("");
     setDescription("");
     setCategory("Expense");
     setCategoryId(1);
     setCurrentTab(0);
     setIsAddingTransaction(false);
+    setTypeSelected("");
   }
-  const categoriesToShow = showAllCategories
-    ? categories
-    : categories.slice(0, 6);
-  const hasMoreCategories = categories.length > 6;
+  const categoriesToShow = categories;
+  const hasMoreCategories = false;
   return (
     <View style={{ marginBottom: 15 }}>
       {isAddingTransaction ? (
@@ -65,7 +66,12 @@ const AddTransaction = ({
             <TextInput
               placeholder="Rs.Amount"
               placeholderTextColor="#CCC"
-              style={{ fontSize: 32, marginBottom: 15, fontWeight: "bold",color: "#000" }}
+              style={{
+                fontSize: 32,
+                marginBottom: 15,
+                fontWeight: "bold",
+                color: "#000",
+              }}
               keyboardType="numeric"
               onChangeText={(text) => {
                 // Remove any non-numeric characters before setting the state
@@ -76,41 +82,24 @@ const AddTransaction = ({
             <TextInput
               placeholder="Merchant name"
               placeholderTextColor="#CCC"
-              style={{ fontSize: 18, marginBottom: 15,color: "#000" }}
+              style={{ fontSize: 18, marginBottom: 15, color: "#000" }}
               onChangeText={setDescription}
             />
             <Text style={{ marginBottom: 6 }}>Select a entry type</Text>
             <SegmentedControl
               values={["Expense", "Income"]}
               selectedIndex={currentTab}
-               tintColor="#EEE" 
-  backgroundColor="#FFFFFF" 
-  fontStyle={{ color: '#000' }} 
+              tintColor="#EEE"
+              backgroundColor="#FFFFFF"
+              fontStyle={{ color: "#000" }}
               onChange={(event) => {
                 setCurrentTab(event.nativeEvent.selectedSegmentIndex);
               }}
             />
-            {/* <TouchableOpacity
-              onPress={() => {
-                
-              }}
-              style={{
-                height: 40,
-                flexDirection: "row",
-                alignItems: "center",
-                justifyContent: "center",
-                backgroundColor: "#00000010",
-                borderRadius: 15,
-                marginBottom: 6,
-                marginTop: 6,
-              }}
-            >
-              <MaterialIcons name="add" size={20} color="#007BFF" />
-              <Text>Add Category</Text>
-            </TouchableOpacity> */}
-            <AddCategory categoryType={currentTab===0? "Expense":"Income"} addCategory={addCategory}>
-
-            </AddCategory>
+            <AddCategory
+              categoryType={currentTab === 0 ? "Expense" : "Income"}
+              addCategory={addCategory}
+            ></AddCategory>
             {categoriesToShow.map((cat) => (
               <CategoryButton
                 key={cat.name}
@@ -184,6 +173,7 @@ const AddTransaction = ({
                 setCategoryId(1);
                 setCurrentTab(0);
                 setShowAllCategories(false);
+                setTypeSelected("");
               }}
               style={{
                 backgroundColor: "#e74c3c",
@@ -284,9 +274,9 @@ function AddButton({
       }}
     >
       <MaterialIcons name="add-circle-outline" size={24} color="#7300FF" />
-<Text style={{ fontWeight: "700", color: "#7300FF", marginLeft: 5 }}>
-  New Entry
-</Text>
+      <Text style={{ fontWeight: "700", color: "#7300FF", marginLeft: 5 }}>
+        New Entry
+      </Text>
     </TouchableOpacity>
   );
 }

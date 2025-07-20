@@ -1,7 +1,8 @@
-import { View, Text, FlatList, TouchableOpacity } from "react-native";
+import { View, Text, FlatList, TouchableOpacity, Dimensions } from "react-native";
 import React, { useEffect, useLayoutEffect, useState } from "react";
 import Card from "../ui/Card";
-import { categoryColors } from "../constants";
+import { categoryColors, categoryEmojies } from "../constants";
+import { PieChart } from "react-native-chart-kit";
 import { getDB } from "../db";
 import { getAllAppData } from "../src/db/helpers";
 import { Category, RootStackParamList, Transaction, UPICategory } from "../types";
@@ -51,8 +52,11 @@ const Analytics = () => {
   }
 
   const sortedCategories = categories
+    .filter((cat) => cat.type === "Expense")
     .map((cat) => {
-      const catTransactions = transactions.filter((t) => t.category_id === cat.id);
+      const catTransactions = transactions.filter(
+        (t) => t.category_id === cat.id
+      );
       const total = sumValues(catTransactions);
       return { ...cat, total };
     })
@@ -75,24 +79,65 @@ const Analytics = () => {
         <View style={{ flex: 1 }}>
           {sortedCategories.length > 0 ? (
             <FlatList
-              style={{ marginBottom: 30 }}
               data={sortedCategories}
               keyExtractor={(item) => item.id.toString()}
               ItemSeparatorComponent={() => <View style={{ height: 12 }} />}
+              ListHeaderComponent={() => (
+                <>
+                  <Text style={{ fontSize: 24, fontWeight: "bold", marginBottom: 16, textAlign: "center" }}>Monthly Analysis</Text>
+                  <PieChart
+                    data={sortedCategories.map((cat) => ({
+                      name: cat.name,
+                      population: cat.total,
+                      color: categoryColors[cat.name] || categoryColors.Default,
+                    }))}
+                    width={Dimensions.get("window").width}
+                    height={220}
+                    chartConfig={{
+                      backgroundColor: "#e26a00",
+                      backgroundGradientFrom: "#fb8c00",
+                      backgroundGradientTo: "#ffa726",
+                      decimalPlaces: 2,
+                      color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
+                      labelColor: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
+                      style: {
+                        borderRadius: 16,
+                      },
+                      propsForDots: {
+                        r: "6",
+                        strokeWidth: "2",
+                        stroke: "#ffa726",
+                      },
+                    }}
+                    accessor={"population"}
+                    backgroundColor={"transparent"}
+                    paddingLeft={"0"}
+                    center={[10, 10]}
+                  />
+                </>
+              )}
+              style={{ marginBottom: 30 }}
               renderItem={({ item }) => {
                 const allTransactions = transactions.filter((t) => t.category_id === item.id);
                 return (
                   <TouchableOpacity
                     key={item.id}
                     activeOpacity={0.7}
-                    onPress={() => navigation.navigate("Transactions", { transactions: allTransactions })}
+                    onPress={() =>
+                      navigation.navigate("Transactions", {
+                        transactions: allTransactions,
+                        category: item,
+                        emoji:
+                          categoryEmojies[item.name] ||
+                          categoryEmojies.Default,
+                      })
+                    }
                   >
                     <AnalyticsListItem amount={item.total} category={item} />
                   </TouchableOpacity>
                 );
               }}
               contentContainerStyle={{ padding: 20, backgroundColor: "#F2E7FF" }}
-              ListHeaderComponent={<Text style={{ fontSize: 24, fontWeight: "bold", marginBottom: 16, textAlign: "center" }}>Monthly Analysis</Text>}
             />
           ) : (
             <View style={{ flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "#F2E7FF" }}>
