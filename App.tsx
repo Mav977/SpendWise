@@ -1,15 +1,15 @@
-import { LogBox } from 'react-native';
+// import { LogBox } from 'react-native';
 
 
-  // Ignore all logs
-  LogBox.ignoreAllLogs();
+//   // Ignore all logs
+//   LogBox.ignoreAllLogs();
 
-  // Override console methods to silence them
-  console.log = () => {};
-  console.warn = () => {};
-  console.error = () => {};
-  console.info = () => {};
-  console.debug = () => {};
+//   // Override console methods to silence them
+//   console.log = () => {};
+//   console.warn = () => {};
+//   console.error = () => {};
+//   console.info = () => {};
+//   console.debug = () => {};
 
 
 import { StatusBar } from "expo-status-bar";

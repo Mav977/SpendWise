@@ -35,6 +35,3 @@ yarn-error.*
 
 # typescript
 *.tsbuildinfo
-# Yarn
-.yarn/
-.yarnrc.yml
