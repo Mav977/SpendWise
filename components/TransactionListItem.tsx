@@ -1,6 +1,7 @@
-import { View, Text, StyleSheet, Button, TouchableOpacity } from "react-native";
+import { View, Text, StyleSheet, Button, TouchableOpacity, useColorScheme } from "react-native";
 import { AntDesign } from "@expo/vector-icons";
 import React from "react";
+import { Colors } from "../styles/theme";
 import { Category, Transaction } from "../types";
 import Card from "../ui/Card";
 import { categoryEmojies, categoryColors } from "../constants";
@@ -18,6 +19,8 @@ const TransactionListItem = ({
   onToggleType,
   onEdit,
 }: TransactionListItemProps) => {
+  const colorScheme = useColorScheme();
+  const theme = Colors[colorScheme ?? 'light'];
     const iconName=transaction.type === "Expense" ? "minuscircle" : "pluscircle";
     const color = transaction.type === "Expense" ? "red" : "green";
     const categoryColor = categoryColors[categoryInfo?.name ?? "Default"];
@@ -37,14 +40,15 @@ const TransactionListItem = ({
           id={transaction.id}
           date={transaction.date}
           description={transaction.description}
+          theme={theme}
         />
       </View>
       <View style={styles.actionsRow}>
         <TouchableOpacity
-          style={styles.editButton}
+          style={[styles.editButton, { backgroundColor: theme.background }]}
           onPress={() => onEdit?.(transaction)}
         >
-          <Text style={styles.editText}>Edit</Text>
+          <Text style={[styles.editText, { color: theme.text }]}>Edit</Text>
         </TouchableOpacity>
       </View>
     </Card>
@@ -77,15 +81,17 @@ function TransactionInfo({
   id,
   date,
   description,
+  theme,
 }: {
   id: number;
   date: number;
   description: string;
+  theme: typeof Colors.light | typeof Colors.dark;
 }) {
   return (
     <View style={{ flex: 1 }}>
       <Text
-        style={{ fontSize: 16, fontWeight: "bold" }}
+        style={{ fontSize: 16, fontWeight: "bold", color: theme.text }}
         numberOfLines={1}
         ellipsizeMode="tail"
       >
@@ -141,7 +147,6 @@ const styles = StyleSheet.create({
 editButton: {
   paddingVertical: 2,
   paddingHorizontal: 10,
-  backgroundColor: "rgba(115, 0, 255, 0.3)",
   borderRadius: 10,
   justifyContent:"center",
   alignItems:"center",
@@ -149,7 +154,6 @@ editButton: {
 },
 editText: {
   fontSize: 12,
-  color: "#FFF",
   fontWeight:"bold"
 },
 

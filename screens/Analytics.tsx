@@ -1,4 +1,4 @@
-import { View, Text, FlatList, TouchableOpacity, Dimensions } from "react-native";
+import { View, Text, FlatList, TouchableOpacity, Dimensions, useColorScheme } from "react-native";
 import React, { useEffect, useLayoutEffect, useState } from "react";
 import Card from "../ui/Card";
 import { categoryColors, categoryEmojies } from "../constants";
@@ -11,16 +11,19 @@ import { useIsFocused, useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import SegmentedControl from "@react-native-segmented-control/segmented-control";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { Colors } from "../styles/theme";
 
 const Analytics = () => {
+  const colorScheme = useColorScheme();
+  const theme = Colors[colorScheme ?? 'light'];
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   useLayoutEffect(() => {
     navigation.setOptions({
       title: "Analytics",
-      headerStyle: { backgroundColor: "rgba(115, 0, 255, 0.72)" },
-      headerTintColor: "#fff",
+      headerStyle: { backgroundColor: theme.tint },
+      headerTintColor: theme.buttonText,
     });
-  }, [navigation]);
+  }, [navigation, theme]);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [upiList, setUpiList] = useState<UPICategory[]>([]);
@@ -64,13 +67,13 @@ const Analytics = () => {
     .filter((cat) => cat.total > 0);
 
   return (
-    <View style={{ flex: 1, backgroundColor: "#F2E7FF" }}>
+    <View style={{ flex: 1, backgroundColor: theme.background }}>
       <SegmentedControl
         values={["Top Categories", "UPI Merchants"]}
         selectedIndex={selectedIndex}
-        tintColor="#EEE"
-        backgroundColor="#FFFFFF"
-        fontStyle={{ color: "#000" }}
+        tintColor={theme.tint}
+        backgroundColor={theme.background}
+        fontStyle={{ color: theme.text }}
         onChange={(event) => setSelectedIndex(event.nativeEvent.selectedSegmentIndex)}
         style={{ marginBottom: 16, marginHorizontal: 16, borderRadius: 8 }}
       />
@@ -84,7 +87,7 @@ const Analytics = () => {
               ItemSeparatorComponent={() => <View style={{ height: 12 }} />}
               ListHeaderComponent={() => (
                 <>
-                  <Text style={{ fontSize: 24, fontWeight: "bold", marginBottom: 16, textAlign: "center" }}>Monthly Analysis</Text>
+                  <Text style={{ fontSize: 24, fontWeight: "bold", marginBottom: 16, textAlign: "center", color: theme.text }}>Monthly Analysis</Text>
                   <PieChart
                     data={sortedCategories.map((cat) => ({
                       name: cat.name,
@@ -137,11 +140,11 @@ const Analytics = () => {
                   </TouchableOpacity>
                 );
               }}
-              contentContainerStyle={{ padding: 20, backgroundColor: "#F2E7FF" }}
+              contentContainerStyle={{ padding: 20, backgroundColor: theme.background }}
             />
           ) : (
-            <View style={{ flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "#F2E7FF" }}>
-              <Text style={{ textAlign: "center", fontSize: 16, color: "#888" }}>No categories found with transaction data.</Text>
+            <View style={{ flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: theme.background }}>
+              <Text style={{ textAlign: "center", fontSize: 16, color: theme.text }}>No categories found with transaction data.</Text>
             </View>
           )}
         </View>
@@ -153,12 +156,12 @@ const Analytics = () => {
               data={upiList}
               keyExtractor={(item) => item.id.toString()}
               ItemSeparatorComponent={() => <View style={{ height: 12 }} />}
-              contentContainerStyle={{ padding: 16, backgroundColor: "#F2E7FF", paddingBottom: 40 }}
+              contentContainerStyle={{ padding: 16, backgroundColor: theme.background, paddingBottom: 40 }}
               renderItem={({ item }) => (
                 <Card style={{ marginHorizontal: 10, padding: 15 }}>
-                  <Text style={{ fontWeight: "bold", fontSize: 16, color: "#7300FF" }}>{item.receiver}</Text>
-                  <Text style={{ color: "#555", marginTop: 4 }}>{item.description}</Text>
-                  <Text style={{ marginTop: 8, fontStyle: "italic", color: item.type === "Expense" ? "#c0392b" : "#27ae60", fontWeight: "500" }}>{item.type}</Text>
+                  <Text style={{ fontWeight: "bold", fontSize: 16, color: theme.text }}>{item.receiver}</Text>
+                  <Text style={{ color: theme.text, marginTop: 4 }}>{item.description}</Text>
+                  <Text style={{ marginTop: 8, fontStyle: "italic", color: item.type === "Expense" ? theme.error : theme.success, fontWeight: "500" }}>{item.type}</Text>
                   <View style={{ alignItems: "flex-end", marginTop: 12 }}>
                     <TouchableOpacity onPress={() => DeleteUpiData(item.id)}>
                       <MaterialCommunityIcons name="delete" size={24} color="#d33535ff" />
@@ -168,8 +171,8 @@ const Analytics = () => {
               )}
             />
           ) : (
-            <View style={{ flex: 1, flexGrow: 1, justifyContent: "center", alignItems: "center", backgroundColor: "#F2E7FF" }}>
-              <Text style={{ textAlign: "center", fontSize: 16, color: "#888" }}>No UPI merchants saved yet.</Text>
+            <View style={{ flex: 1, flexGrow: 1, justifyContent: "center", alignItems: "center", backgroundColor: theme.background }}>
+              <Text style={{ textAlign: "center", fontSize: 16, color: theme.text }}>No UPI merchants saved yet.</Text>
             </View>
           )}
         </View>

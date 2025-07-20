@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, TextInput, Button } from "react-native";
+import { View, Text, TouchableOpacity, TextInput, Button, useColorScheme } from "react-native";
 import React, { Dispatch, SetStateAction, useEffect, useState } from "react";
 import { Category, Transaction } from "../types";
 import { useSQLiteContext } from "expo-sqlite";
@@ -6,6 +6,7 @@ import { MaterialIcons } from "@expo/vector-icons";
 import Card from "./Card";
 import SegmentedControl from "@react-native-segmented-control/segmented-control";
 import AddCategory from "../components/AddCategory";
+import { Colors } from "../styles/theme";
 
 const AddTransaction = ({
   insertTransaction,
@@ -18,6 +19,8 @@ const AddTransaction = ({
   cat: Category[];
   addCategory: (name: string, type: string) => Promise<void>;
 }) => {
+  const colorScheme = useColorScheme();
+  const theme = Colors[colorScheme ?? 'light'];
   const [isAddingTransaction, setIsAddingTransaction] =
     React.useState<boolean>(false);
   const [currentTab, setCurrentTab] = React.useState<number>(0);
@@ -65,12 +68,12 @@ const AddTransaction = ({
           <Card>
             <TextInput
               placeholder="Rs.Amount"
-              placeholderTextColor="#CCC"
+              placeholderTextColor={theme.placeholder}
               style={{
                 fontSize: 32,
                 marginBottom: 15,
                 fontWeight: "bold",
-                color: "#000",
+                color: theme.text,
               }}
               keyboardType="numeric"
               onChangeText={(text) => {
@@ -81,17 +84,17 @@ const AddTransaction = ({
             />
             <TextInput
               placeholder="Merchant name"
-              placeholderTextColor="#CCC"
-              style={{ fontSize: 18, marginBottom: 15, color: "#000" }}
+              placeholderTextColor={theme.placeholder}
+              style={{ fontSize: 18, marginBottom: 15, color: theme.text }}
               onChangeText={setDescription}
             />
-            <Text style={{ marginBottom: 6 }}>Select a entry type</Text>
+            <Text style={{ marginBottom: 6, color: theme.text }}>Select a entry type</Text>
             <SegmentedControl
               values={["Expense", "Income"]}
               selectedIndex={currentTab}
-              tintColor="#EEE"
-              backgroundColor="#FFFFFF"
-              fontStyle={{ color: "#000" }}
+              tintColor={theme.tint}
+              backgroundColor={theme.background}
+              fontStyle={{ color: theme.text }}
               onChange={(event) => {
                 setCurrentTab(event.nativeEvent.selectedSegmentIndex);
               }}
@@ -120,7 +123,7 @@ const AddTransaction = ({
                   flexDirection: "row",
                   alignItems: "center",
                   justifyContent: "center",
-                  backgroundColor: "#E0E0E0", // A slightly different background for the "show more" button
+                  backgroundColor: theme.tint,
                   borderRadius: 15,
                   marginBottom: 6,
                   marginTop: 6,
@@ -129,7 +132,7 @@ const AddTransaction = ({
                 <MaterialIcons
                   name="keyboard-arrow-down"
                   size={24}
-                  color="#000"
+                  color={theme.text}
                 />
               </TouchableOpacity>
             )}
@@ -141,7 +144,7 @@ const AddTransaction = ({
                   flexDirection: "row",
                   alignItems: "center",
                   justifyContent: "center",
-                  backgroundColor: "#E0E0E0",
+                  backgroundColor: theme.tint,
                   borderRadius: 15,
                   marginBottom: 6,
                   marginTop: 6,
@@ -150,7 +153,7 @@ const AddTransaction = ({
                 <MaterialIcons
                   name="keyboard-arrow-up"
                   size={24}
-                  color="#000"
+                  color={theme.text}
                 />
               </TouchableOpacity>
             )}
@@ -203,7 +206,7 @@ const AddTransaction = ({
           </View>
         </View>
       ) : (
-        <AddButton setIsAddingTransaction={setIsAddingTransaction} />
+        <AddButton setIsAddingTransaction={setIsAddingTransaction} theme={theme} />
       )}
     </View>
   );
@@ -223,6 +226,8 @@ function CategoryButton({
   setCategoryId: Dispatch<SetStateAction<number>>;
   deleteCategory: (id: number) => Promise<void>;
 }) {
+  const colorScheme = useColorScheme();
+  const theme = Colors[colorScheme ?? 'light'];
   return (
     <TouchableOpacity
       onPress={() => {
@@ -236,7 +241,7 @@ function CategoryButton({
         flexDirection: "row",
         alignItems: "center",
         justifyContent: "center",
-        backgroundColor: isSelected ? "#007BFF20" : "#00000020",
+        backgroundColor: isSelected ? theme.tint : theme.background,
         borderRadius: 15,
         marginBottom: 6,
         marginTop: 6,
@@ -245,7 +250,7 @@ function CategoryButton({
       <Text
         style={{
           fontWeight: "700",
-          color: isSelected ? "#007BFF" : "#000000",
+          color: isSelected ? theme.buttonText : theme.text,
           marginLeft: 5,
         }}
       >
@@ -256,8 +261,10 @@ function CategoryButton({
 }
 function AddButton({
   setIsAddingTransaction,
+  theme,
 }: {
   setIsAddingTransaction: Dispatch<SetStateAction<boolean>>;
+  theme: typeof Colors.light | typeof Colors.dark;
 }) {
   return (
     <TouchableOpacity
@@ -269,12 +276,12 @@ function AddButton({
         alignItems: "center",
 
         justifyContent: "center",
-        backgroundColor: "rgba(115, 0, 255, 0.3)",
+        backgroundColor: theme.tint,
         borderRadius: 15,
       }}
     >
-      <MaterialIcons name="add-circle-outline" size={24} color="#7300FF" />
-      <Text style={{ fontWeight: "700", color: "#7300FF", marginLeft: 5 }}>
+      <MaterialIcons name="add-circle-outline" size={24} color={theme.buttonText} />
+      <Text style={{ fontWeight: "700", color: theme.buttonText, marginLeft: 5 }}>
         New Entry
       </Text>
     </TouchableOpacity>

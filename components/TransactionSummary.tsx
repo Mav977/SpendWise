@@ -1,5 +1,6 @@
-import { View, Text, StyleSheet, TextStyle } from "react-native";
+import { View, Text, StyleSheet, TextStyle, useColorScheme } from "react-native";
 import React from "react";
+import { Colors } from "../styles/theme";
 import Card from "../ui/Card";
 import { TransactionsByMonth } from "../types";
 
@@ -7,6 +8,8 @@ function TransactionSummary({
   totalIncome,
   totalExpenses,
 }: TransactionsByMonth) {
+  const colorScheme = useColorScheme();
+  const theme = Colors[colorScheme ?? 'light'];
   const savings = totalIncome - totalExpenses;
   const readablePeriod = new Date().toLocaleDateString("default", {
     month: "long",
@@ -26,21 +29,21 @@ function TransactionSummary({
   };
   return (
     <Card style={styles.container}>
-      <Text style={styles.periodTitle}>Summary for {readablePeriod}</Text>
+      <Text style={[styles.periodTitle, { color: theme.text }]}>Summary for {readablePeriod}</Text>
 
-      <Text style={styles.summaryText}>
+      <Text style={[styles.summaryText, { color: theme.text }]}>
         Income:{" "}
         <Text style={getMoneyTextStyle(totalIncome)}>
           {formatMoney(totalIncome)}
         </Text>
       </Text>
-      <Text style={styles.summaryText}>
+      <Text style={[styles.summaryText, { color: theme.text }]}>
         Total Expenses:{" "}
         <Text style={getMoneyTextStyle(totalExpenses)}>
           {formatMoney(totalExpenses)}
         </Text>
       </Text>
-      <Text style={styles.summaryText}>
+      <Text style={[styles.summaryText, { color: theme.text }]}>
         Savings:{" "}
         <Text style={getMoneyTextStyle(savings)}>{formatMoney(savings)}</Text>
       </Text>
@@ -55,12 +58,10 @@ const styles = StyleSheet.create({
   periodTitle: {
     fontSize: 20,
     fontWeight: "bold",
-    color: "#333",
     marginBottom: 15,
   },
   summaryText: {
     fontSize: 18,
-    color: "#333",
     marginBottom: 10,
   },
 });

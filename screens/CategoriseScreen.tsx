@@ -6,6 +6,7 @@ import {
   StyleSheet,
   TouchableOpacity,
   ActivityIndicator,
+  useColorScheme,
 } from "react-native";
 import React, { useEffect, useState, useRef } from "react";
 import { useRoute, useNavigation, RouteProp } from "@react-navigation/native";
@@ -19,10 +20,7 @@ import { addCategory } from "../src/db/addCategory";
 import { getAllAppData } from "../src/db/helpers";
 import { fetchAi } from "../src/utils/fetchAI";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-
-// Define the purple color for reuse
-const PURPLE_COLOR = "rgba(115, 0, 255, 0.72)"; // Your header purple
-const LIGHT_PURPLE_BACKGROUND = "rgb(223, 197, 250)";
+import { Colors } from "../styles/theme";
 
 type CategoriseScreenRouteProp = RouteProp<RootStackParamList, "Categorise">;
 
@@ -47,6 +45,9 @@ const CategoriseScreen = () => {
     initialDescription: string;
     initialType: "Expense" | "Income";
   };
+  const colorScheme = useColorScheme();
+  console.log(colorScheme);
+  const theme = Colors[colorScheme ?? 'light'];
   const decodedReceiver = decodeURIComponent(receiver);
   receiver = decodedReceiver; // Use the decoded receiver for display
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -182,16 +183,16 @@ const CategoriseScreen = () => {
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: theme.background }]}>
       {receiver && receiver !== "undefined" && (
-        <Text style={styles.label}>
-          Receiver: <Text style={styles.value}>{description || receiver}</Text>
+        <Text style={[styles.label, { color: theme.text }]}>
+          Receiver: <Text style={[styles.value, { color: theme.text }]}>{description || receiver}</Text>
         </Text>
       )}
-      <Text style={styles.label}>
-        Amount: <Text style={styles.value}>₹{amount}</Text>
+      <Text style={[styles.label, { color: theme.text }]}>
+        Amount: <Text style={[styles.value, { color: theme.text }]}>₹{amount}</Text>
       </Text>
-      <Text style={styles.label}>Transaction Type</Text>
+      <Text style={[styles.label, { color: theme.text }]}>Transaction Type</Text>
       <SegmentedControl
         values={["Expense", "Income"]}
         selectedIndex={transactionType === "Expense" ? 0 : 1}
@@ -201,8 +202,8 @@ const CategoriseScreen = () => {
           setTransactionType(selected);
         }}
         style={styles.segmentedControl}
-        backgroundColor={LIGHT_PURPLE_BACKGROUND}
-        tintColor={PURPLE_COLOR}
+        backgroundColor={theme.background}
+        tintColor={theme.tint}
       />
       <AddCategory
         categoryType={transactionType}
@@ -210,8 +211,8 @@ const CategoriseScreen = () => {
       />
       {isloading && (
         <View style={styles.aiSuggestionContainer}>
-          <ActivityIndicator size="small" color={PURPLE_COLOR} />
-          <Text style={styles.aiLoadingText}>Loading AI suggestions....</Text>
+          <ActivityIndicator size="small" color={theme.tint} />
+          <Text style={[styles.aiLoadingText, { color: theme.text }]}>Loading AI suggestions....</Text>
         </View>
       )}
       {show && !isloading && (
@@ -219,14 +220,14 @@ const CategoriseScreen = () => {
           <MaterialCommunityIcons
             name="robot-outline"
             size={20}
-            color={PURPLE_COLOR}
+            color={theme.tint}
           />
-          <Text style={styles.aiSuggestionText}>AI suggestions:</Text>
+          <Text style={[styles.aiSuggestionText, { color: theme.tint }]}>AI suggestions:</Text>
         </View>
       )}
 
       <TextInput
-        style={styles.input}
+        style={[styles.input, { backgroundColor: theme.inputBackground, borderColor: theme.border, color: theme.text, shadowColor: theme.shadow }]}
         placeholder="Category"
         value={category}
         onChangeText={(text) => {
@@ -234,11 +235,11 @@ const CategoriseScreen = () => {
           setShowSuggestions(true);
         }}
         onBlur={() => setShowSuggestions(false)}
-        placeholderTextColor="#000"
+        placeholderTextColor={theme.placeholder}
       />
       {showSuggestions && category.length > 0 && (
         <View
-          style={{ backgroundColor: "#fff", borderRadius: 8, marginBottom: 10 }}
+          style={{ backgroundColor: theme.card, borderRadius: 8, marginBottom: 10 }}
         >
           {categories
             .filter(
@@ -256,37 +257,37 @@ const CategoriseScreen = () => {
                 style={{
                   paddingVertical: 10,
                   paddingHorizontal: 12,
-                  borderBottomColor: "#ddd",
+                  borderBottomColor: theme.border,
                   borderBottomWidth: 1,
                 }}
               >
-                <Text style={{ fontSize: 16 }}>{cat.name}</Text>
+                <Text style={{ fontSize: 16, color: theme.text }}>{cat.name}</Text>
               </TouchableOpacity>
             ))}
         </View>
       )}
 
       <TextInput
-        style={styles.input}
+        style={[styles.input, { backgroundColor: theme.inputBackground, borderColor: theme.border, color: theme.text, shadowColor: theme.shadow }]}
         placeholder="Merchant name"
         value={description}
         onChangeText={setDescription}
-        placeholderTextColor="#000"
+        placeholderTextColor={theme.placeholder}
       />
 
       <View style={styles.switchRow}>
-        <Text style={styles.switchLabel}>Always Ask</Text>
+        <Text style={[styles.switchLabel, { color: theme.text }]}>Always Ask</Text>
         <Switch
           value={alwaysAsk}
           onValueChange={setAlwaysAsk}
-          thumbColor={alwaysAsk ? PURPLE_COLOR : "#f4f3f4"}
-          trackColor={{ false: "#767577", true: PURPLE_COLOR }}
+          thumbColor={alwaysAsk ? theme.tint : theme.tabIconDefault}
+          trackColor={{ false: theme.tabIconDefault, true: theme.tint }}
         />
       </View>
 
       <View style={styles.buttonWrapper}>
-        <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
-          <Text style={styles.saveButtonText}>Save</Text>
+        <TouchableOpacity style={[styles.saveButton, { backgroundColor: theme.tint }]} onPress={handleSave}>
+          <Text style={[styles.saveButtonText, { color: theme.buttonText }]}>Save</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -299,42 +300,33 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 24,
-    backgroundColor: "#F2E7FE",
   },
   label: {
     fontSize: 16,
     fontWeight: "500",
     marginBottom: 4,
-    color: "#333",
   },
   value: {
     fontWeight: "bold",
-    color: "#000",
   },
   input: {
     height: 50,
-    borderColor: "#999",
     borderWidth: 1,
     borderRadius: 10,
     paddingHorizontal: 14,
     marginVertical: 10,
-    backgroundColor: "#fff",
-    color: "#000",
-    shadowColor: "#000",
     shadowOpacity: 0.1,
     shadowRadius: 4,
     shadowOffset: { width: 0, height: 2 },
     elevation: 3,
   },
   saveButton: {
-    backgroundColor: PURPLE_COLOR,
     paddingVertical: 12,
     borderRadius: 10,
     alignItems: "center",
     justifyContent: "center",
   },
   saveButtonText: {
-    color: "#FFFFFF",
     fontSize: 18,
     fontWeight: "bold",
   },
@@ -347,7 +339,6 @@ const styles = StyleSheet.create({
   switchLabel: {
     fontSize: 16,
     fontWeight: "500",
-    color: "#333",
   },
   buttonWrapper: {
     marginTop: 10,
@@ -363,13 +354,11 @@ const styles = StyleSheet.create({
     marginLeft: 8,
     fontSize: 16,
     fontStyle: "italic",
-    color: "#555",
   },
   aiSuggestionText: {
     marginLeft: 8,
     fontSize: 16,
     fontWeight: "bold",
-    color: PURPLE_COLOR,
   },
   segmentedControl: {
     marginBottom: 16,

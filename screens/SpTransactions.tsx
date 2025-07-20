@@ -1,13 +1,16 @@
-import { View, Text, FlatList } from "react-native";
+import { View, Text, FlatList, useColorScheme } from "react-native";
 import React, { useLayoutEffect } from "react";
 import { RootStackParamList, Transaction } from "../types";
 import TransactionListItem from "../components/TransactionListItem";
 import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { Colors } from "../styles/theme";
 
 type SpTransactionsRouteProp = RouteProp<RootStackParamList, "Transactions">;
 
 function SpTransactions() {
+  const colorScheme = useColorScheme();
+  const theme = Colors[colorScheme ?? 'light'];
   const route = useRoute<SpTransactionsRouteProp>();
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
@@ -16,23 +19,23 @@ function SpTransactions() {
   useLayoutEffect(() => {
     navigation.setOptions({
       title: "Transactions",
-      headerStyle: { backgroundColor: "rgba(115, 0, 255, 0.72)" },
-      headerTintColor: "#fff",
+      headerStyle: { backgroundColor: theme.tint },
+      headerTintColor: theme.buttonText,
     });
-  }, [navigation]);
+  }, [navigation, theme]);
 
   return (
-    <View style={{ flex: 1, backgroundColor: "#F2E7FF" }}>
+    <View style={{ flex: 1, backgroundColor: theme.background }}>
       <View
         style={{
           padding: 20,
           flexDirection: "row",
           justifyContent: "space-between",
           alignItems: "center",
-          backgroundColor: "white",
+          backgroundColor: theme.background,
         }}
       >
-        <Text style={{ fontSize: 24, fontWeight: "bold" }}>
+        <Text style={{ fontSize: 24, fontWeight: "bold", color: theme.text }}>
           {category.name}
         </Text>
         <Text style={{ fontSize: 24 }}>{emoji}</Text>
@@ -63,7 +66,7 @@ function SpTransactions() {
         contentContainerStyle={{
           padding: 20,
           flexGrow: 1,
-          backgroundColor: "#F2E7FF",
+          backgroundColor: theme.background,
         }}
       />
     </View>

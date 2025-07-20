@@ -1,10 +1,13 @@
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, useColorScheme } from 'react-native';
 import React from 'react';
+import { Colors } from '../styles/theme';
 import { Category } from '../types';
 import Card from '../ui/Card';
 import { categoryColors } from '../constants';
 
 const AnalyticsListItem = ({ amount, category }: { amount: number, category: Category }) => {
+  const colorScheme = useColorScheme();
+  const theme = Colors[colorScheme ?? 'light'];
   const categoryStripColor = categoryColors[category.name] || "rgb(255, 255, 0)";
 
   return (
@@ -12,9 +15,9 @@ const AnalyticsListItem = ({ amount, category }: { amount: number, category: Cat
       <View style={[styles.colorStrip, { backgroundColor: categoryStripColor }]} />
       <View style={styles.contentContainer}>
         <View style={styles.categoryInfo}>
-          <Text style={styles.categoryName}>{category.name}</Text>
+          <Text style={[styles.categoryName, { color: theme.text }]}>{category.name}</Text>
         </View>
-        <Text style={styles.amount}>
+        <Text style={[styles.amount, { color: theme.text }]}>
           Rs {amount.toFixed(2)}
         </Text>
       </View>
@@ -52,7 +55,6 @@ const styles = StyleSheet.create({
   categoryName: {
     fontSize: 18,
     fontWeight: '600',
-    color: "#333",
   },
   categoryType: {
     fontSize: 14,
@@ -62,7 +64,6 @@ const styles = StyleSheet.create({
   amount: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: "#7300FF",
   },
 });
 

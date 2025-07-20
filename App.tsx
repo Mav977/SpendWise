@@ -19,6 +19,7 @@ import {
   View,
   ActivityIndicator,
   Platform,
+  useColorScheme,
 } from "react-native";
 import * as FileSystem from "expo-file-system";
 import { Asset } from "expo-asset";
@@ -36,10 +37,7 @@ import { useNavigationContainerRef } from '@react-navigation/native';
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import Analytics from "./screens/Analytics";
 import SpTransactions from "./screens/SpTransactions";
-
- // adjust alpha (0.1–0.3 for more/less opacity)
- const LIGHT_PURPLE="#F2E7FE";
-const HEADER_PURPLE = "rgba(115, 0, 255, 0.72)";
+import { Colors } from "./styles/theme";
 
 export async function resetToAssetDB() {
   const path = `${FileSystem.documentDirectory}SQLite/myDatabase.db`;
@@ -92,6 +90,11 @@ const linking = {
 
 
 export default function App() {
+  const colorScheme = useColorScheme();
+  const theme = Colors[colorScheme ?? 'light'];
+
+  console.log("Current color scheme:", colorScheme);
+
   // useEffect(() => {
   //   const reset = async () => {
   //     await resetToAssetDB();
@@ -124,9 +127,11 @@ export default function App() {
     return () => subscription.remove();
   }, []);
   return (
-   <NavigationContainer linking={linking} ref={navigationRef} >
-      <Suspense
-        fallback={
+    <>
+      <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
+      <NavigationContainer linking={linking} ref={navigationRef} >
+        <Suspense
+          fallback={
           <View
             style={{
               flex: 1,
@@ -148,54 +153,67 @@ export default function App() {
           <Stack.Navigator
             screenOptions={{
               headerStyle: {
-                backgroundColor: HEADER_PURPLE,
+                backgroundColor: theme.tint,
               },
               headerTitleStyle: {
-                color: "#FFF", // dark purple text
+                color: theme.buttonText,
               },
-             contentStyle:{
-              backgroundColor:LIGHT_PURPLE
-             }
+              contentStyle: {
+                backgroundColor: theme.background,
+              },
             }}
           >
-            
-            <Stack.Screen name="TabNavigation" component={TabNavigation} options={{headerShown:false}}/>
+            <Stack.Screen
+              name="TabNavigation"
+              options={{ headerShown: false }}
+            >
+              {(props) => <TabNavigation {...props} theme={theme} />}
+            </Stack.Screen>
             <Stack.Screen name="Categorise" component={CategoriseScreen} />
             <Stack.Screen name="Transactions" component={SpTransactions} />
           </Stack.Navigator>
         </SQLiteProvider>
       </Suspense>
     </NavigationContainer>
+    </>
   );
 }
-function TabNavigation() {
-  return(
-    <Tab.Navigator initialRouteName="Home" >
-     <Tab.Screen
-        name="Home" 
+function TabNavigation({ theme }: { theme: typeof Colors.light | typeof Colors.dark }) {
+  return (
+    <Tab.Navigator
+      initialRouteName="Home"
+      screenOptions={{
+        tabBarStyle: { backgroundColor: theme.card },
+        tabBarActiveTintColor: theme.tabIconSelected,
+        tabBarInactiveTintColor: theme.tabIconDefault,
+      }}
+    >
+      <Tab.Screen
+        name="Home"
         component={Home}
         options={{
-         
           tabBarLabel: "Home",
           tabBarIcon: ({ color, size }) => (
-            
             <MaterialCommunityIcons name="home" size={size} color={color} />
           ),
         }}
       />
-       <Tab.Screen
-        name="Analytics" 
-        component={Analytics} 
+      <Tab.Screen
+        name="Analytics"
+        component={Analytics}
         options={{
-          
           tabBarLabel: "Analytics",
           tabBarIcon: ({ color, size }) => (
-           <MaterialCommunityIcons name="google-analytics" size={size} color={color} />
+            <MaterialCommunityIcons
+              name="google-analytics"
+              size={size}
+              color={color}
+            />
           ),
         }}
       />
     </Tab.Navigator>
-  )
+  );
 }
 const styles = StyleSheet.create({
   container: {

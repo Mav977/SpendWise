@@ -1,7 +1,8 @@
-import { View, Text, TextInput, TouchableOpacity } from "react-native";
+import { View, Text, TextInput, TouchableOpacity, useColorScheme } from "react-native";
 import React, { useState } from "react";
 import { useSQLiteContext } from "expo-sqlite";
 import { MaterialIcons } from "@expo/vector-icons";
+import { Colors } from "../styles/theme";
 
 const AddCategory = ({
   categoryType,
@@ -10,6 +11,8 @@ const AddCategory = ({
   categoryType: string;
   addCategory: (name: string, type: string) => Promise<void>;
 }) => {
+  const colorScheme = useColorScheme();
+  const theme = Colors[colorScheme ?? 'light'];
   const [isEditing, setIsEditing] = useState(false);
   const [newCategory, setNewCategory] = useState("");
 
@@ -34,11 +37,12 @@ const AddCategory = ({
         value={newCategory}
         onChangeText={setNewCategory}
         style={{
-            borderColor: "#ccc",
+            borderColor: theme.border,
             borderWidth: 1,
             borderRadius: 8,
             padding: 10,
             marginTop: 10,
+            color: theme.text,
           }}
       />
    <View
@@ -56,11 +60,11 @@ const AddCategory = ({
       paddingHorizontal: 14,
       borderRadius: 6,
       borderWidth: 1,
-      borderColor: "#ccc",
-      backgroundColor: "#f8f8f8",
+      borderColor: theme.border,
+      backgroundColor: theme.background,
     }}
   >
-    <Text style={{ color: "#555", fontWeight: "500" }}>Cancel</Text>
+    <Text style={{ color: theme.text, fontWeight: "500" }}>Cancel</Text>
   </TouchableOpacity>
 
   <TouchableOpacity
@@ -69,12 +73,12 @@ const AddCategory = ({
       paddingVertical: 6,
       paddingHorizontal: 14,
       borderRadius: 6,
-      backgroundColor: "#007BFF20",
+      backgroundColor: theme.tint,
       borderWidth: 1,
-      borderColor: "#007BFF",
+      borderColor: theme.tint,
     }}
   >
-    <Text style={{ color: "#007BFF", fontWeight: "500" }}>Save</Text>
+    <Text style={{ color: theme.buttonText, fontWeight: "500" }}>Save</Text>
   </TouchableOpacity>
 </View>
 
@@ -83,12 +87,12 @@ const AddCategory = ({
   return (
     <TouchableOpacity onPress={()=>setIsEditing(true)} style={{flexDirection:"row", height:40, alignItems: "center",
         justifyContent: "center",
-        backgroundColor: "#00000010",
+        backgroundColor: theme.tint,
         borderRadius: 15,
         marginBottom: 6,
         marginTop: 6,}}>
-     <MaterialIcons name="add" size={20} color="#007BFF" />
-      <Text style={{ fontWeight: "700", color: "#007BFF", marginLeft: 5 }}>
+     <MaterialIcons name="add" size={20} color={theme.buttonText} />
+      <Text style={{ fontWeight: "700", color: theme.buttonText, marginLeft: 5 }}>
         Add Category
       </Text>
     </TouchableOpacity>

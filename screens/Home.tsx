@@ -1,5 +1,5 @@
-import { View, Text, ScrollView, TextStyle, StyleSheet, Button, Platform, Linking, Alert, TouchableOpacity, RefreshControl, FlatList, ToastAndroid } from 'react-native'
-import React, { useCallback, useEffect, useState,useLayoutEffect } from 'react'
+import { View, Text, ScrollView, TextStyle, StyleSheet, Button, Platform, Linking, Alert, TouchableOpacity, RefreshControl, FlatList, ToastAndroid, useColorScheme } from 'react-native'
+import React, { useCallback, useEffect, useState, useLayoutEffect } from 'react'
 import { Category, RootStackParamList, Transaction, TransactionsByMonth } from '../types';
 import { useSQLiteContext } from 'expo-sqlite';
 import Card from "../ui/Card"
@@ -14,16 +14,19 @@ import { useIsFocused, useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { getAllAppData } from '../src/db/helpers';
 import { addCategory } from '../src/db/addCategory';
-import TransactionsListItem from "../components/TransactionListItem"
+import TransactionsListItem from "../components/TransactionListItem";
+import { Colors } from '../styles/theme';
 
 
 type HomeScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'TabNavigation'>;
 
 
 const Home = () => {
-   const isFocused = useIsFocused(); // Get the focus state
+  const colorScheme = useColorScheme();
+  const theme = Colors[colorScheme ?? 'light'];
+  const isFocused = useIsFocused(); // Get the focus state
 
-  
+
   useEffect(() => {
     // This effect runs whenever the screen's focus state changes
     if (isFocused) {
@@ -33,19 +36,19 @@ const Home = () => {
   }, [isFocused]); // Depend on isFocused
 const navigation = useNavigation<HomeScreenNavigationProp>();
  useLayoutEffect(() => {
-     navigation.setOptions({
-       headerTitle: "Spendwise",
-       headerLargeTitle: true,
-       headerTransparent: Platform.OS === "ios" ? true : false,
-       headerBlurEffect: "light",
-       headerStyle: {
-         backgroundColor: "rgba(115, 0, 255, 0.72)",
-       },
-       headerTitleStyle: {
-         color: "#FFF",
-       },
-       // You can also set headerRight, headerLeft, etc. here if needed
-     });
+    navigation.setOptions({
+      headerTitle: "Spendwise",
+      headerLargeTitle: true,
+      headerTransparent: Platform.OS === "ios" ? true : false,
+      headerBlurEffect: "light",
+      headerStyle: {
+        backgroundColor: theme.tint,
+      },
+      headerTitleStyle: {
+        color: theme.buttonText,
+      },
+      // You can also set headerRight, headerLeft, etc. here if needed
+    });
    }, [navigation]); 
 useEffect(() => {
   Notifications.requestPermissionsAsync().then(({ granted }) => {
@@ -275,13 +278,13 @@ async function handleAddCategory(name: string, type: string) {
           totalIncome={transactionsByMonth.totalIncome}
         />
 
-        <Text style={{ fontSize: 22, fontWeight: "bold", marginVertical: 10 }}>
+        <Text style={{ fontSize: 22, fontWeight: "bold", marginVertical: 10, color: theme.text }}>
           All Transactions
         </Text>
       </>
     }
     contentContainerStyle={{ padding: 20,
-    flexGrow: 1, backgroundColor: '#F2E7FF' }}
+    flexGrow: 1, backgroundColor: theme.background }}
     refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
   />
 );
