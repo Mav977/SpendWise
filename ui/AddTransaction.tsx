@@ -285,7 +285,7 @@ function AddButton({
     >
       <MaterialIcons name="add-circle-outline" size={24} color="#7300FF" />
 <Text style={{ fontWeight: "700", color: "#7300FF", marginLeft: 5 }}>
-  New entry
+  New Entry
 </Text>
     </TouchableOpacity>
   );
