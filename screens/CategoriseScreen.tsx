@@ -168,7 +168,7 @@ const CategoriseScreen = () => {
           console.log("Reached here");
           await db.runAsync(
             `UPDATE Transactions
-             SET category_id = ?, amount = ?, date = ?, description = ?, type = ?
+             SET category_id = ?, amount = ?, date = ?, description = ?, type = ?, pending_cat = 0
              WHERE id = ?`,
             
             [//@ts-ignore
@@ -183,8 +183,8 @@ const CategoriseScreen = () => {
           console.log(" Updated transaction:", transactionId);
         } else {
           await db.runAsync(
-            `INSERT INTO Transactions (category_id, amount, date, description, type)
-           VALUES (?, ?, ?, ?, ?)`,
+            `INSERT INTO Transactions (category_id, amount, date, description, type, pending_cat)
+           VALUES (?, ?, ?, ?, ?, 0)`,
             [
               //@ts-ignore
               cat[0].id,

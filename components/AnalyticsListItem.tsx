@@ -17,6 +17,9 @@ const AnalyticsListItem = ({ amount, category }: { amount: number, category: Cat
         <Text style={styles.amount}>
           Rs {amount.toFixed(2)}
         </Text>
+        <View style={{ marginLeft: 10, marginBottom: 10  }}>
+          <Text style={{ fontSize: 30, textAlign: 'center', alignItems: 'center'}}>→</Text>
+        </View>
       </View>
     </Card>
   );

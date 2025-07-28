@@ -6,6 +6,7 @@ export interface Transaction {
   date: number;
   description: string;
   type: "Expense" | "Income";
+  pending_cat: number;
 }
 
 export interface Category {
@@ -38,10 +39,11 @@ export type RootStackParamList = {
     initialType?: "Expense" | "Income";
   };
    TabNavigation: {
-    screen?: 'Home' | 'Analytics';
+    screen?: 'Home' | 'Analytics' | 'PendingTxns';
     params?: {
       HomeScreen?: undefined;
       AnalyticsScreen?: undefined;
+      PendingTxns?: undefined;
     };
   };
   Transactions: {

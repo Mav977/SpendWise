@@ -36,6 +36,7 @@ import { useNavigationContainerRef } from '@react-navigation/native';
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import Analytics from "./screens/Analytics";
 import SpTransactions from "./screens/SpTransactions";
+import PendingTxns from "./screens/PendingTxns";
 
  // adjust alpha (0.1–0.3 for more/less opacity)
  const LIGHT_PURPLE="#F2E7FE";
@@ -108,9 +109,10 @@ export default function App() {
       const receiver = url.searchParams.get('receiver');
       const amount = parseFloat(url.searchParams.get('amount') || '0');
       const ask = parseFloat(url.searchParams.get('alwaysask') || '0');
+       const transactionId = url.searchParams.get('transactionId');
       if (receiver && !isNaN(amount)) {
         console.log("🔗 Navigating to Categorise screen with:", { receiver, amount, ask });
-        navigationRef.current?.navigate('Categorise', { receiver, amount, ask });
+        navigationRef.current?.navigate('Categorise', { receiver, amount, ask, transactionId: transactionId ? parseInt(transactionId, 10) : undefined });
       } else {
         console.log(" Missing or invalid parameters in deep link");
       }
@@ -180,6 +182,18 @@ function TabNavigation() {
           tabBarIcon: ({ color, size }) => (
             
             <MaterialCommunityIcons name="home" size={size} color={color} />
+          ),
+        }}
+      />
+       <Tab.Screen
+        name="Pending Transactions" 
+        component={PendingTxns}
+        options={{
+         
+          tabBarLabel: "Pending Transactions",
+          tabBarIcon: ({ color, size }) => (
+            
+            <MaterialCommunityIcons name="progress-clock" size={size} color={color} />
           ),
         }}
       />

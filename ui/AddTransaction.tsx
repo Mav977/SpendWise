@@ -45,6 +45,7 @@ const AddTransaction = ({
       date: new Date().getTime() ,
       description,
       type: currentTab === 0 ? "Expense" : "Income",
+      pending_cat: 0,
     });
     setAmount("");
     setDescription("");
@@ -52,6 +53,7 @@ const AddTransaction = ({
     setCategoryId(1);
     setCurrentTab(0);
     setIsAddingTransaction(false);
+    setTypeSelected("");
   }
   const categoriesToShow = showAllCategories
     ? categories

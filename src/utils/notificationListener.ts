@@ -10,11 +10,9 @@ import { addCategory } from "../db/addCategory";
 let lastTimestamp = 0;
 
 // 🔹 Send deep link notification
-async function sendNotif(receiver: string, amount: number, alwaysAsk: number) {
+async function sendNotif(receiver: string, amount: number, alwaysAsk: number, transactionId: number) {
   const deepLink = Linking.createURL(
-    `/categorise?receiver=${encodeURIComponent(
-      receiver
-    )}&amount=${amount}&alwaysask=${alwaysAsk}`
+    `/categorise?receiver=${encodeURIComponent(receiver)}&amount=${amount}&alwaysask=${alwaysAsk}&transactionId=${transactionId}`
   );
 
   await Notifications.scheduleNotificationAsync({
@@ -28,7 +26,21 @@ async function sendNotif(receiver: string, amount: number, alwaysAsk: number) {
 
   console.log("🔔 Notification scheduled with deep link:", deepLink);
 }
-
+async function addPendingTransaction(
+  db: SQLite.SQLiteDatabase,
+  amount: number,
+  date: number,
+  receiver: string
+) : Promise<number>{
+    const result = await db.runAsync(
+    `INSERT INTO Transactions (category_id, amount, date, description, type, pending_cat)
+     VALUES (?, ?, ?, ?, ?, 1)`, 
+     //40 is 'miscellaneous' category ID, I put receiver as description intentionally
+    [40, amount, date, receiver, "Expense"]
+  );
+  // result.lastInsertRowId contains the new transaction's ID
+  return result.lastInsertRowId;
+}
 async function autoSave({
   db,
   receiver,
@@ -58,8 +70,8 @@ async function autoSave({
   const category_id = findId[0].id;
 
   await db.runAsync(
-    `INSERT INTO Transactions (category_id, amount, date, description, type)
-     VALUES (?, ?, ?, ?, ?)`,
+    `INSERT INTO Transactions (category_id, amount, date, description, type, pending_cat)
+     VALUES (?, ?, ?, ?, ?, 0)`,// Insert transaction with pending_cat set to 0
     [category_id, amount, date, description, type]
   );
 
@@ -137,7 +149,9 @@ const handleNotification = async (notification: any) => {
         if (ask === 0) {
           await autoSave({ db, receiver, amount, category, description, type });
         } else {
-          await sendNotif(receiver, amount, ask);
+          const transactionId = await addPendingTransaction(db, amount, Date.now(), receiver);
+await sendNotif(receiver, amount, ask, transactionId);
+
         }
       } else {
         const cat: Category[] = await db.getAllAsync(
@@ -149,7 +163,9 @@ const handleNotification = async (notification: any) => {
         console.log("This is ai ", ai);
         if (!ai || !ai.category) {
           console.warn("Ai is not available");
-          await sendNotif(receiver, amount, 0);
+          const transactionId = await addPendingTransaction(db, amount, Date.now(), receiver);
+await sendNotif(receiver, amount, 0, transactionId);
+
           return;
         }
         const category = ai.category;
@@ -221,7 +237,9 @@ const handleNotification = async (notification: any) => {
               );
             }
           } else {
-            await sendNotif(receiver, amount, 0);
+            const transactionId = await addPendingTransaction(db, amount, Date.now(), receiver);
+            await sendNotif(receiver, amount, 0, transactionId);
+
           }
         }
       }
