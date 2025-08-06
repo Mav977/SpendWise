@@ -105,7 +105,7 @@ const Home = () => {
             setTimeout(() => {
               Alert.alert(
                 "Notification Access Required",
-                "To detect UPI messages, please grant Notification Access to this app.\n\nIMPORTANT: Among the 2 Spendwise apps, choose the second one.",
+                "To detect UPI messages, please grant Notification Access to this app.\n\n⚠️⚠️IMPORTANT: Among the 2 Spendwise apps, choose the second one. If that doesn't work, choose the one which doesn't crash your app.⚠️⚠️",
                 [
                   { text: "Cancel", style: "cancel" },
                   {

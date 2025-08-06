@@ -36,7 +36,7 @@ export async function importDatabase() {
     console.log('✅ Import successful. Restart app to apply.');
 Alert.alert(
   'Import Successful',
-  'Database imported.',
+  'Database imported. Restart app to apply',
   [{ text: 'OK' }]
 );
   } catch (error) {

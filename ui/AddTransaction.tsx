@@ -37,6 +37,7 @@ const AddTransaction = ({
     const getMerchants = async () => {
       const db = await getDB();
       const rows = await db.getAllAsync("SELECT DISTINCT description FROM UPICategory WHERE description IS NOT NULL AND description != ''");
+      
       setMerchants(rows.map((row: any) => row.description));
     };
     getMerchants();
@@ -145,7 +146,9 @@ const AddTransaction = ({
                         paddingVertical: 10,
                         paddingHorizontal: 12,
                         borderBottomColor: "#ddd",
-                        borderBottomWidth: idx === merchants.length - 1 ? 0 : 1, // No border for the last item
+                       borderBottomWidth: idx === merchants.length - 1 ? 0 : 1
+
+
                       }}
                     >
                       <Text style={{ fontSize: 16 }}>{merchant}</Text>

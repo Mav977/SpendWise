@@ -14,7 +14,7 @@ export const categoryColors: { [key: string]: string } = {
   "Education": "#483D8B",      // DarkSlateBlue
   "Gifts": "#FF69B4",         // HotPink
   "Miscellaneous": "#808080", // Gray
-  "General Store": "#00987dff",
+  "General Store": "#00987d",
   "Home Accessories": "#ffb6c1",
   // Income Categories
   "Bonus": "#32CD32",          // LimeGreen
