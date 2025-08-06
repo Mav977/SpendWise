@@ -9,6 +9,28 @@ import { addCategory } from "../db/addCategory";
 
 let lastTimestamp = 0;
 
+async function fetchMessageAi(upimessage:string,categories: string[]) {
+    try {
+        const res=await fetch("http://10.1.4.234:8000/message",{
+            method:"POST",
+            headers:{
+                "Content-Type": "application/json"
+            },
+            body:JSON.stringify({mess:upimessage, categories:categories})
+        }
+        )
+         if (!res.ok) {
+      throw new Error("Gemini API call failed for message");
+    }
+    const text= await res.text();
+    const parsed=JSON.parse(text);
+    console.log(" AI Response for message:", parsed);
+    return parsed;
+    } catch (error) {
+        console.error("Gemini error",error);
+        return null;
+    }
+}
 // 🔹 Send deep link notification
 async function sendNotif(receiver: string, amount: number, alwaysAsk: number, transactionId: number) {
   const deepLink = Linking.createURL(
@@ -17,7 +39,7 @@ async function sendNotif(receiver: string, amount: number, alwaysAsk: number, tr
 
   await Notifications.scheduleNotificationAsync({
     content: {
-      title: "New UPI Receiver",
+      title: "New Receiver",
       body: `Add category for ${receiver}`,
       data: { deepLink },
     },
@@ -102,42 +124,56 @@ const handleNotification = async (notification: any) => {
     lastTimestamp = now;
     const fullMessage = `${parsed.title} ${parsed.text}`.toLowerCase();
 
-    const isAmountPresent =
-      /₹\s?([\d,]+\.\d{2}|\d+)|inr\s?([\d,]+\.\d{2}|\d+)/i.test(fullMessage);
-    const hasBankClue =
-      fullMessage.includes("bank") ||
-      fullMessage.includes("axis") ||
-      fullMessage.includes("icici") ||
-      fullMessage.includes("a/c") ||
-      fullMessage.includes("account");
+    // const isAmountPresent =
+    //   /₹\s?([\d,]+\.\d{2}|\d+)|inr\s?([\d,]+\.\d{2}|\d+)/i.test(fullMessage);
+    // const hasBankClue =
+    //   fullMessage.includes("bank") ||
+    //   fullMessage.includes("axis") ||
+    //   fullMessage.includes("icici") ||
+    //   fullMessage.includes("a/c") ||
+    //   fullMessage.includes("account");
 
-    if (!(isAmountPresent && hasBankClue)) {
-      console.log("🛑 Not a likely UPI transaction");
-      return;
-    }
-
-    const pattern = /₹\s*([\d,]+(?:\.\d{1,2})?)\s*•\s*(.*?)\s*•\s*(.*)/i;
-    const match = fullMessage.match(pattern);
-    if (!match) return;
-
-    const amount = parseFloat(match[1].replace(/,/g, ""));
-    const receiver = match[3];
-  
-    // const hasUPIclue = fullMessage.includes("upi") || fullMessage.includes("UPI");
-    // if(!hasUPIclue) {
+    // if (!(isAmountPresent && hasBankClue)) {
     //   console.log("🛑 Not a likely UPI transaction");
     //   return;
     // }
-    console.log("✅ Parsed Amount:", amount, "| Receiver:", receiver);
-    const tosendAI = `₹ ${amount},${receiver}`;
+
+    // const pattern = /₹\s*([\d,]+(?:\.\d{1,2})?)\s*•\s*(.*?)\s*•\s*(.*)/i;
+    // const match = fullMessage.match(pattern);
+    // if (!match) return;
+
+    // const amount = parseFloat(match[1].replace(/,/g, ""));
+    // const receiver = match[3];
+  
+    const hasUPIclue = fullMessage.includes("upi") || fullMessage.includes("UPI") || fullMessage.includes("Upi");
+    if(!hasUPIclue) {
+      console.log("🛑 Not a likely UPI transaction");
+      return;
+    }
     const db = await getDB();
 
+    const Cat: Category[] = await db.getAllAsync(
+          "SELECT * FROM Categories"
+    );
+    const CatNames = Cat.map((item) => item.name);
+
+    const aiMessage = await fetchMessageAi(fullMessage, CatNames);
+    const { amount, receiver, category, description, type, confidence_score } = aiMessage;
+
+    if (!amount || !receiver) {
+      console.warn("Could not extract amount or receiver from message");
+      return;
+    }
+    console.log("✅ Parsed Amount:", amount, "| Receiver:", receiver);
+    const tosendAI = `₹ ${amount},${receiver}`;
+    
     await db.withTransactionAsync(async () => {
       const rows = await db.getAllAsync(
         "SELECT * FROM UPICategory WHERE receiver = ?",
         [receiver]
       );
-
+      
+    
       if (rows.length > 0) {
         
         const row = rows[0];
@@ -160,24 +196,15 @@ await sendNotif(receiver, amount, ask, transactionId);
 
         }
       } else {
-        const cat: Category[] = await db.getAllAsync(
-          "SELECT * FROM Categories"
-        );
-        const categoryNames = cat.map((item) => item.name);
-
-        const ai = await fetchAi(tosendAI, categoryNames);
-        console.log("This is ai ", ai);
-        if (!ai || !ai.category) {
+        
+        if (!aiMessage) {
           console.warn("Ai is not available");
           const transactionId = await addPendingTransaction(db, amount, Date.now(), receiver);
 await sendNotif(receiver, amount, 0, transactionId);
 
           return;
         }
-        const category = ai.category;
-        const description = ai.description;
        
-        const type = ai.type;
         const upi = await db.getAllAsync<UPICategory>(
           "SELECT * FROM UPICategory WHERE LOWER(description) = LOWER(?)",
           [description]
@@ -200,14 +227,14 @@ await sendNotif(receiver, amount, 0, transactionId);
           await autoSave({ db, receiver, amount, category, description, type });
         } else {
           if (
-            Number(ai.confidence_score) >= 9 &&
+            Number(confidence_score) >= 9 &&
             category.toLowerCase() != "unknown" &&
             description.toLowerCase() != "unknown" &&
             type.toLowerCase() != "unknown"
           ) {
             if (
-              cat.some(
-                (c) => c.name.toLowerCase() === ai.category.toLowerCase()
+               CatNames.some(
+                (c) => c.toLowerCase() === category.toLowerCase()
               )
             ) {
               await autoSave({
@@ -223,11 +250,11 @@ await sendNotif(receiver, amount, 0, transactionId);
        VALUES (?, ?, ?, ?, ?)`,
                 [receiver, category, description, 0, type]
               );
-            } else if (Number(ai.confidence_score) >= 9.5) {
+            } else if (Number(confidence_score) >= 9.5) {
               //add category
-              console.log("🔧 Going to add new category:", ai.category);
-              await addCategory(db, ai.category, ai.type, () => {});
-              console.log("🔧 Added new category:", ai.category);
+              console.log("🔧 Going to add new category:", category);
+              await addCategory(db, category, type, () => {});
+              console.log("🔧 Added new category:", category);
               await autoSave({
                 db,
                 receiver,
