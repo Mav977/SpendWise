@@ -11,7 +11,7 @@ let lastTimestamp = 0;
 
 async function fetchMessageAi(upimessage:string,categories: string[]) {
     try {
-        const res=await fetch("http://10.1.4.234:8000/message",{
+        const res=await fetch("https://spendwise-wyyr.onrender.com/message",{
             method:"POST",
             headers:{
                 "Content-Type": "application/json"
