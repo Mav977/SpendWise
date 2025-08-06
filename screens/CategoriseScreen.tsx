@@ -13,7 +13,7 @@ import * as SQLite from "expo-sqlite";
 import { getDB } from "../db";
 import SegmentedControl from "@react-native-segmented-control/segmented-control";
 import AddCategory from "../components/AddCategory";
-import { Category } from "../types";
+import { Category, Transaction } from "../types";
 import { addCategory } from "../src/db/addCategory";
 import { getAllAppData } from "../src/db/helpers";
 import { fetchAi } from "../src/utils/fetchAI";
@@ -53,6 +53,7 @@ const CategoriseScreen = () => {
   const [transactionType, setTransactionType] = useState<"Expense" | "Income">(
     initialType || "Expense" // Pre-fill if editing
   );
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [isloading, setisloading] = useState(false);
   const [show, setshow] = useState(false);
   const aiFetchAttemptedRef = useRef(false);
@@ -63,17 +64,23 @@ const CategoriseScreen = () => {
       const db = await getDB();
       const updatedData = await getAllAppData(db);
       setCategories(updatedData.categories);
+      setTransactions(updatedData.allTransactions);
+     
       // const rows = await db.getAllAsync(
       //   "SELECT * FROM UPICategory"
       // );
       // console.log("UPICategory rows:", rows);
     };
     getCategories();
+   
   }, []);
 
   useEffect(() => {
+    const isPending = transactions.some(
+  (t) => t.id === transactionId && t.pending_cat === 1
+);
     if (
-      transactionId === undefined &&
+     isPending &&
       categories.length > 0 &&
       !aiFetchAttemptedRef.current
     ) {
@@ -131,18 +138,18 @@ const CategoriseScreen = () => {
     await db.withTransactionAsync(async () => {
       if (receiver || description) {
         const existing = await db.getAllAsync(
-    `SELECT * FROM UPICategory WHERE receiver = ? OR description = ?`,
-    [receiver, description]
-  );
+          `SELECT * FROM UPICategory WHERE receiver = ? OR description = ?`,
+          [receiver, description]
+        );
 
         if (existing.length > 0) {
           // Receiver already exists — update
-         await db.runAsync(
-  `UPDATE UPICategory
+          await db.runAsync(
+            `UPDATE UPICategory
    SET category = ?, description = ?, alwaysAsk = ?
    WHERE receiver = ? OR description = ?`,
-  [category, description, alwaysAsk ? 1 : 0, receiver, description]
-);
+            [category, description, alwaysAsk ? 1 : 0, receiver, description]
+          );
         } else {
           // New receiver — insert
           await db.runAsync(
@@ -165,16 +172,24 @@ const CategoriseScreen = () => {
 
       if (cat.length > 0) {
         if (transactionId) {
+          const existingTransaction = (await db.getFirstAsync(
+            `SELECT date FROM Transactions WHERE id = ?`,
+            [transactionId]
+          )) as { date?: number } | undefined;
+
+          const originalDate = existingTransaction?.date ?? Date.now(); // fallback just in case
+
           console.log("Reached here");
           await db.runAsync(
             `UPDATE Transactions
              SET category_id = ?, amount = ?, date = ?, description = ?, type = ?, pending_cat = 0
              WHERE id = ?`,
-            
-            [//@ts-ignore
+
+            [
+              //@ts-ignore
               cat[0].id,
               amount,
-              Date.now(),
+              originalDate, // Use the original date if editing
               description || receiver,
               transactionType,
               transactionId,
@@ -199,12 +214,20 @@ const CategoriseScreen = () => {
     });
     navigation.goBack();
   };
+  const categoryExists = categories.some(
+    (catObj) =>
+      catObj.name.trim().toLowerCase() === category.trim().toLowerCase() &&
+      catObj.type === transactionType
+  );
 
   return (
     <View style={styles.container}>
       {receiver && (
         <Text style={styles.label}>
-          Receiver: <Text style={styles.value}>{ (receiver=="undefined")? description : receiver}</Text>
+          Receiver:{" "}
+          <Text style={styles.value}>
+            {receiver == "undefined" ? description : receiver}
+          </Text>
         </Text>
       )}
       <Text style={styles.label}>
@@ -223,10 +246,7 @@ const CategoriseScreen = () => {
         backgroundColor={LIGHT_PURPLE_BACKGROUND}
         tintColor={PURPLE_COLOR}
       />
-      <AddCategory
-        categoryType={transactionType}
-        addCategory={handleAddCategory}
-      />
+      
       {isloading && (
         <View style={styles.aiSuggestionContainer}>
           <ActivityIndicator size="small" color={PURPLE_COLOR} />
@@ -244,17 +264,33 @@ const CategoriseScreen = () => {
         </View>
       )}
 
-      <TextInput
-        style={styles.input}
-        placeholder="Category"
-        value={category}
-        onChangeText={(text) => {
-          setCategory(text);
-          setShowSuggestions(true);
-        }}
-        onBlur={() => setShowSuggestions(false)}
-        placeholderTextColor="#000"
-      />
+    <View style={{ position: "relative", marginBottom: 10 }}>
+  <TextInput
+    style={styles.input}
+    placeholder="Category"
+    value={category}
+    onChangeText={(text) => {
+      setCategory(text);
+      setShowSuggestions(true);
+    }}
+    onBlur={() => setShowSuggestions(false)}
+    placeholderTextColor="#000"
+  />
+  {category.length > 0 && (
+    <TouchableOpacity
+      style={{
+        position: "absolute",
+        right: 18,
+        top: 23,
+        
+      }}
+      onPress={() => setCategory("")}
+      hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+    >
+      <MaterialCommunityIcons name="close-circle" size={22} color="#aaa" />
+    </TouchableOpacity>
+  )}
+</View>
       {showSuggestions && category.length > 0 && (
         <View
           style={{ backgroundColor: "#fff", borderRadius: 8, marginBottom: 10 }}
@@ -284,17 +320,52 @@ const CategoriseScreen = () => {
             ))}
         </View>
       )}
-
-      <TextInput
-        style={styles.input}
-        placeholder="Merchant name"
-        value={description}
-        onChangeText={setDescription}
-        placeholderTextColor="#000"
-      />
-
+ {!categoryExists && category.trim().length > 0 && (
+        <TouchableOpacity
+          style={{
+            backgroundColor: "#7340ff",
+            paddingVertical: 8,
+            borderRadius: 8,
+            alignItems: "center",
+            marginBottom: 10,
+            alignSelf: "flex-end", // This moves the button to the right
+            paddingHorizontal: 16,
+          }}
+          onPress={async () => {
+            await handleAddCategory(category.trim(), transactionType);
+          }}
+        >
+          <Text style={{ color: "#fff", fontWeight: "bold" }}>
+            Save Category "{category.trim()}"
+          </Text>
+        </TouchableOpacity>
+      )}
+     <View style={{ position: "relative", marginBottom: 10 }}>
+  <TextInput
+    style={styles.input}
+    placeholder="Merchant name"
+    value={description}
+    onChangeText={setDescription}
+    placeholderTextColor="#000"
+  />
+  {description.length > 0 && (
+    <TouchableOpacity
+      style={{
+        position: "absolute",
+        right: 18,
+        top: 23,
+        zIndex: 2,
+      }}
+      onPress={() => setDescription("")}
+      hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+    >
+      <MaterialCommunityIcons name="close-circle" size={22} color="#aaa" />
+    </TouchableOpacity>
+  )}
+</View>
       <View style={styles.switchRow}>
         <Text style={styles.switchLabel}>Always Ask</Text>
+        
         <Switch
           value={alwaysAsk}
           onValueChange={setAlwaysAsk}
@@ -302,7 +373,17 @@ const CategoriseScreen = () => {
           trackColor={{ false: "#767577", true: PURPLE_COLOR }}
         />
       </View>
-
+      <View style={{ flexDirection: 'row', marginVertical: 2 }}>
+  
+    <MaterialCommunityIcons
+      name="information"
+      size={15}
+      color="#666"
+    />
+    <Text style={{ color: '#666', marginLeft: 4, fontSize: 11 }}>
+      When enabled, you will be asked to categorise this transaction every time. Useful for merchants like Amazon with varied purchases.
+    </Text>
+  </View>
       <View style={styles.buttonWrapper}>
         <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
           <Text style={styles.saveButtonText}>Save</Text>
@@ -360,7 +441,7 @@ const styles = StyleSheet.create({
   switchRow: {
     flexDirection: "row",
     alignItems: "center",
-    marginVertical: 16,
+    marginVertical: 15,
     justifyContent: "space-between",
   },
   switchLabel: {

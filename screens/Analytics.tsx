@@ -106,7 +106,7 @@ const Analytics = () => {
                     }
                     //on long press to delete category
                     onLongPress={async () => {
-                      if (item.id === 40) {
+                      if (item.id === 13) {
                         alert("This category cannot be deleted.");
                         return;
                       }

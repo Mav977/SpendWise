@@ -37,6 +37,9 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import Analytics from "./screens/Analytics";
 import SpTransactions from "./screens/SpTransactions";
 import PendingTxns from "./screens/PendingTxns";
+import SettingsScreen from "./screens/Settings";
+import { getDB } from "./db";
+// import * as Updates from 'expo-updates'; 
 
  // adjust alpha (0.1–0.3 for more/less opacity)
  const LIGHT_PURPLE="#F2E7FE";
@@ -48,6 +51,7 @@ export async function resetToAssetDB() {
   try {
     await FileSystem.deleteAsync(path, { idempotent: true });
     console.log("🗑️ Deleted sandboxed DB. Will reload from assets on next access.");
+  //  await Updates.reloadAsync();
   } catch (error) {
     console.error("❌ Failed to delete DB:", error);
   }
@@ -173,7 +177,20 @@ export default function App() {
 function TabNavigation() {
   return(
     <Tab.Navigator initialRouteName="Home" >
-     <Tab.Screen
+     
+       <Tab.Screen
+        name="Pending Transactions" 
+        component={PendingTxns}
+        options={{
+         
+          tabBarLabel: "Pending",
+          tabBarIcon: ({ color, size }) => (
+            
+            <MaterialCommunityIcons name="progress-clock" size={size} color={color} />
+          ),
+        }}
+      />
+      <Tab.Screen
         name="Home" 
         component={Home}
         options={{
@@ -182,18 +199,6 @@ function TabNavigation() {
           tabBarIcon: ({ color, size }) => (
             
             <MaterialCommunityIcons name="home" size={size} color={color} />
-          ),
-        }}
-      />
-       <Tab.Screen
-        name="Pending Transactions" 
-        component={PendingTxns}
-        options={{
-         
-          tabBarLabel: "Pending Transactions",
-          tabBarIcon: ({ color, size }) => (
-            
-            <MaterialCommunityIcons name="progress-clock" size={size} color={color} />
           ),
         }}
       />
@@ -208,6 +213,18 @@ function TabNavigation() {
           ),
         }}
       />
+      <Tab.Screen 
+  name="Settings" 
+  component={SettingsScreen}
+  options={{
+    headerStyle: { backgroundColor: "rgba(115, 0, 255, 0.72)" },
+    headerTintColor: "#fff",
+    tabBarIcon: ({ color, size }) => (
+      <MaterialCommunityIcons name="cog" color={color} size={size} />
+    ),
+  }}
+/>
+
     </Tab.Navigator>
   )
 }

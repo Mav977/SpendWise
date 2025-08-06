@@ -2,21 +2,22 @@ import { View, Text, TouchableOpacity, TextInput, Button } from "react-native";
 import React, { Dispatch, SetStateAction, useEffect, useState } from "react";
 import { Category, Transaction } from "../types";
 import { useSQLiteContext } from "expo-sqlite";
-import { MaterialIcons } from "@expo/vector-icons";
+import { MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
 import Card from "./Card";
 import SegmentedControl from "@react-native-segmented-control/segmented-control";
 import AddCategory from "../components/AddCategory";
+import { getDB } from "../db";
 
 const AddTransaction = ({
   insertTransaction,
   deleteCategory,
   cat,
-  addCategory
+  addCategory,
 }: {
   insertTransaction: (transaction: Transaction) => Promise<void>;
   deleteCategory: (id: number) => Promise<void>;
-  cat: Category[]; 
-   addCategory: (name: string, type: string) => Promise<void>;
+  cat: Category[];
+  addCategory: (name: string, type: string) => Promise<void>;
 }) => {
   const [isAddingTransaction, setIsAddingTransaction] =
     React.useState<boolean>(false);
@@ -29,6 +30,18 @@ const AddTransaction = ({
   const [categoryId, setCategoryId] = React.useState<number>(1);
   const db = useSQLiteContext();
   const [showAllCategories, setShowAllCategories] = useState<boolean>(false);
+  const [merchants, setMerchants] = useState<string[]>([]);
+  const [showMerchantSuggestions, setShowMerchantSuggestions] = useState(false);
+
+  useEffect(() => {
+    const getMerchants = async () => {
+      const db = await getDB();
+      const rows = await db.getAllAsync("SELECT DISTINCT description FROM UPICategory WHERE description IS NOT NULL AND description != ''");
+      setMerchants(rows.map((row: any) => row.description));
+    };
+    getMerchants();
+  }, []);
+
   useEffect(() => {
     setShowAllCategories(false);
     setCategory(currentTab === 0 ? "Expense" : "Income");
@@ -37,12 +50,13 @@ const AddTransaction = ({
   const categories = cat.filter(
     (category) => category.type === (currentTab === 0 ? "Expense" : "Income")
   );
+
   async function handleSave() {
     // @ts-ignore
     await insertTransaction({
       category_id: categoryId,
       amount: Number(amount),
-      date: new Date().getTime() ,
+      date: new Date().getTime(),
       description,
       type: currentTab === 0 ? "Expense" : "Income",
       pending_cat: 0,
@@ -55,10 +69,12 @@ const AddTransaction = ({
     setIsAddingTransaction(false);
     setTypeSelected("");
   }
+
   const categoriesToShow = showAllCategories
     ? categories
     : categories.slice(0, 6);
   const hasMoreCategories = categories.length > 6;
+
   return (
     <View style={{ marginBottom: 15 }}>
       {isAddingTransaction ? (
@@ -67,7 +83,12 @@ const AddTransaction = ({
             <TextInput
               placeholder="Rs.Amount"
               placeholderTextColor="#CCC"
-              style={{ fontSize: 32, marginBottom: 15, fontWeight: "bold",color: "#000" }}
+              style={{
+                fontSize: 32,
+                marginBottom: 15,
+                fontWeight: "bold",
+                color: "#000",
+              }}
               keyboardType="numeric"
               onChangeText={(text) => {
                 // Remove any non-numeric characters before setting the state
@@ -75,44 +96,90 @@ const AddTransaction = ({
                 setAmount(numericValue);
               }}
             />
-            <TextInput
-              placeholder="Merchant name"
-              placeholderTextColor="#CCC"
-              style={{ fontSize: 18, marginBottom: 15,color: "#000" }}
-              onChangeText={setDescription}
-            />
+            <View style={{ position: "relative", marginBottom: 10 }}>
+              <TextInput
+                style={{ fontSize: 18, marginBottom: 15, color: "#000" }}
+                placeholder="Merchant name"
+                value={description}
+                onChangeText={text => {
+                  setDescription(text);
+                  setShowMerchantSuggestions(true);
+                }}
+                onBlur={() => {
+                  // Add a small delay to allow the onPress of the suggestion to fire first
+                  setTimeout(() => {
+                    setShowMerchantSuggestions(false);
+                  }, 1000);
+                }}
+                placeholderTextColor="#000"
+              />
+              {description.length > 0 && (
+                <TouchableOpacity
+                  style={{
+                    position: "absolute",
+                    right: 18,
+                    top: 23,
+                    zIndex: 2,
+                  }}
+                  onPress={() => setDescription("")}
+                  hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                >
+                  <MaterialCommunityIcons name="close-circle" size={22} color="#aaa" />
+                </TouchableOpacity>
+              )}
+            </View>
+            {showMerchantSuggestions && description.length > 0 && (
+              <View style={{ backgroundColor: "#fff", borderRadius: 8, marginBottom: 10 }}>
+                {merchants
+                  .filter(merchant =>
+                    merchant.toLowerCase().includes(description.toLowerCase())
+                  )
+                  .map((merchant, idx) => (
+                    <TouchableOpacity
+                      key={merchant + idx}
+                      onPress={() => {
+                        setDescription(merchant);
+                        setShowMerchantSuggestions(false);
+                      }}
+                      style={{
+                        paddingVertical: 10,
+                        paddingHorizontal: 12,
+                        borderBottomColor: "#ddd",
+                        borderBottomWidth: idx === merchants.length - 1 ? 0 : 1, // No border for the last item
+                      }}
+                    >
+                      <Text style={{ fontSize: 16 }}>{merchant}</Text>
+                    </TouchableOpacity>
+                  ))}
+              </View>
+            )}
             <Text style={{ marginBottom: 6 }}>Select a entry type</Text>
             <SegmentedControl
               values={["Expense", "Income"]}
               selectedIndex={currentTab}
-               tintColor="#EEE" 
-  backgroundColor="#FFFFFF" 
-  fontStyle={{ color: '#000' }} 
+              tintColor="#EEE"
+              backgroundColor="#FFFFFF"
+              fontStyle={{ color: "#000" }}
               onChange={(event) => {
                 setCurrentTab(event.nativeEvent.selectedSegmentIndex);
               }}
             />
-            {/* <TouchableOpacity
-              onPress={() => {
-                
-              }}
-              style={{
-                height: 40,
-                flexDirection: "row",
-                alignItems: "center",
-                justifyContent: "center",
-                backgroundColor: "#00000010",
-                borderRadius: 15,
-                marginBottom: 6,
-                marginTop: 6,
-              }}
-            >
-              <MaterialIcons name="add" size={20} color="#007BFF" />
-              <Text>Add Category</Text>
-            </TouchableOpacity> */}
-            <AddCategory categoryType={currentTab===0? "Expense":"Income"} addCategory={addCategory}>
 
-            </AddCategory>
+            <View style={{ flexDirection: "row", marginVertical: 10 }}>
+              <MaterialCommunityIcons
+                name="information"
+                size={15}
+                color="#666"
+              />
+              <Text style={{ color: "#666", marginLeft: 4, fontSize: 11 }}>
+                Long press to delete category
+              </Text>
+            </View>
+            <AddCategory
+              categoryType={currentTab === 0 ? "Expense" : "Income"}
+              addCategory={addCategory}
+            ></AddCategory>
+
             {categoriesToShow.map((cat) => (
               <CategoryButton
                 key={cat.name}
@@ -286,9 +353,9 @@ function AddButton({
       }}
     >
       <MaterialIcons name="add-circle-outline" size={24} color="#7300FF" />
-<Text style={{ fontWeight: "700", color: "#7300FF", marginLeft: 5 }}>
-  New Entry
-</Text>
+      <Text style={{ fontWeight: "700", color: "#7300FF", marginLeft: 5 }}>
+        New Entry
+      </Text>
     </TouchableOpacity>
   );
 }

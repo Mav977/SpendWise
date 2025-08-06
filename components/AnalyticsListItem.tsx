@@ -5,7 +5,7 @@ import Card from '../ui/Card';
 import { categoryColors } from '../constants';
 
 const AnalyticsListItem = ({ amount, category }: { amount: number, category: Category }) => {
-  const categoryStripColor = categoryColors[category.name] || "rgb(255, 255, 0)";
+  const categoryStripColor = categoryColors[category.name] || "rgba(64, 0, 255, 0.37)";
 
   return (
     <Card style={styles.card}>

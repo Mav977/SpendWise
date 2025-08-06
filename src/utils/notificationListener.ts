@@ -122,6 +122,12 @@ const handleNotification = async (notification: any) => {
 
     const amount = parseFloat(match[1].replace(/,/g, ""));
     const receiver = match[3];
+  
+    // const hasUPIclue = fullMessage.includes("upi") || fullMessage.includes("UPI");
+    // if(!hasUPIclue) {
+    //   console.log("🛑 Not a likely UPI transaction");
+    //   return;
+    // }
     console.log("✅ Parsed Amount:", amount, "| Receiver:", receiver);
     const tosendAI = `₹ ${amount},${receiver}`;
     const db = await getDB();

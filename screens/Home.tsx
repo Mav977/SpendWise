@@ -1,17 +1,14 @@
 import {
   View,
   Text,
-  ScrollView,
-  TextStyle,
   StyleSheet,
-  Button,
-  Platform,
-  Linking,
-  Alert,
   TouchableOpacity,
   RefreshControl,
   FlatList,
   ToastAndroid,
+  Platform,
+  Linking,
+  Alert,
 } from "react-native";
 import React, {
   useCallback,
@@ -45,16 +42,25 @@ type HomeScreenNavigationProp = NativeStackNavigationProp<
   "TabNavigation"
 >;
 
+function groupTransactionsByMonth(transactions: Transaction[]) {
+  const groups: { [key: string]: Transaction[] } = {};
+  transactions.forEach((txn) => {
+    const date = new Date(txn.date);
+    const monthKey = date.toLocaleString("default", { month: "long", year: "numeric" });
+    if (!groups[monthKey]) groups[monthKey] = [];
+    groups[monthKey].push(txn);
+  });
+  return groups;
+}
+
 const Home = () => {
-  const isFocused = useIsFocused(); // Get the focus state
+  const isFocused = useIsFocused();
 
   useEffect(() => {
-    // This effect runs whenever the screen's focus state changes
     if (isFocused) {
-      console.log("Home screen is focused, refreshing data.");
-      getData(); // Call your data fetching function
+      getData();
     }
-  }, [isFocused]); // Depend on isFocused
+  }, [isFocused]);
   const navigation = useNavigation<HomeScreenNavigationProp>();
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -68,7 +74,6 @@ const Home = () => {
       headerTitleStyle: {
         color: "#FFF",
       },
-      // You can also set headerRight, headerLeft, etc. here if needed
     });
   }, [navigation]);
   useEffect(() => {
@@ -82,11 +87,9 @@ const Home = () => {
     const subscription = DeviceEventEmitter.addListener(
       "transactionInserted",
       () => {
-        console.log("🔄 Received event: transactionInserted");
-        getData(); // this will re-fetch data and update UI
+        getData();
       }
     );
-    // Clean up
     return () => {
       subscription.remove();
     };
@@ -97,22 +100,14 @@ const Home = () => {
       if (Platform.OS === "android") {
         try {
           const status = await NotificationListener.getPermissionStatus();
-          console.log("🔍 Notification Access Status:", status);
-
           if (status !== "authorized") {
             ToastAndroid.show("Permission denied!", ToastAndroid.LONG);
-
-            // Delay the alert to ensure it's shown properly
             setTimeout(() => {
               Alert.alert(
                 "Notification Access Required",
                 "To detect UPI messages, please grant Notification Access to this app.\n\nIMPORTANT: Among the 2 Spendwise apps, choose the second one.",
-
                 [
-                  {
-                    text: "Cancel",
-                    style: "cancel",
-                  },
+                  { text: "Cancel", style: "cancel" },
                   {
                     text: "Open Settings",
                     onPress: () => {
@@ -125,22 +120,15 @@ const Home = () => {
                 ],
                 { cancelable: true }
               );
-            }, 500); // Delay ensures the UI is ready
-          } else {
-            console.log("✅ Notification access is already granted");
+            }, 500);
           }
         } catch (e) {
-          console.warn("❌ Error checking notification access:", e);
-          // As a fallback, show the alert anyway
           setTimeout(() => {
             Alert.alert(
               "Notification Access Required",
               "Could not verify notification access. Please grant access manually.",
               [
-                {
-                  text: "Cancel",
-                  style: "cancel",
-                },
+                { text: "Cancel", style: "cancel" },
                 {
                   text: "Open Settings",
                   onPress: () => {
@@ -164,17 +152,14 @@ const Home = () => {
 
   const onRefresh = useCallback(() => {
     setRefreshing(true);
-
     getData();
     setTimeout(() => {
       setRefreshing(false);
     }, 1500);
   }, []);
-  //useState<Category[]>([]); means categories is an array of type Category (taken from types.ts)
+
   const [categories, setCategories] = useState<Category[]>([]);
-  const [filteredTransactions, setFilteredTransactions] = useState<
-    Transaction[]
-  >([]);
+  const [filteredTransactions, setFilteredTransactions] = useState<Transaction[]>([]);
   const [allTransactions, setAllTransactions] = useState<Transaction[]>([]);
   const [transactionsByMonth, setTransactionsByMonth] =
     React.useState<TransactionsByMonth>({
@@ -194,7 +179,7 @@ const Home = () => {
 
     setAllTransactions(allTransactions);
     const filtered = allTransactions.filter(
-      (txn) => txn.pending_cat === 0 // Only show transactions that are not pending
+      (txn) => txn.pending_cat === 0
     );
     setFilteredTransactions(filtered);
     setCategories(categories);
@@ -207,12 +192,10 @@ const Home = () => {
     });
   }
   async function deleteCategory(id: number) {
-    //id 40 is reserved for 'Miscellaneous' category, so we don't allow deletion
-    if (id === 40) {
+    if (id === 13) {
       alert("This category cannot be deleted.");
       return;
     }
-
     db.withTransactionAsync(async () => {
       await db.runAsync(`DELETE FROM Categories WHERE id = ?;`, [id]);
       await getData();
@@ -256,14 +239,6 @@ const Home = () => {
     });
   }
 
-  const testNavigateToCategories = () => {
-    navigation.navigate("Categorise", {
-      receiver: "Test Receiver",
-      amount: 100,
-      ask: 0,
-    });
-  };
-
   const handleEditTransaction = (transaction: Transaction) => {
     navigation.navigate("Categorise", {
       amount: transaction.amount,
@@ -276,23 +251,57 @@ const Home = () => {
       initialType: transaction.type,
     });
   };
+
+  // Group transactions by month and flatten for FlatList
+  const sectionedTransactions = React.useMemo(() => {
+    const grouped = groupTransactionsByMonth(filteredTransactions);
+    const result: Array<{ type: "header" | "item"; month?: string; txn?: Transaction }> = [];
+    Object.entries(grouped).forEach(([month, txns]) => {
+      result.push({ type: "header", month });
+      txns.forEach((txn) => result.push({ type: "item", txn }));
+    });
+    return result;
+  }, [filteredTransactions]);
+
   return (
     <FlatList
       ItemSeparatorComponent={() => <View style={{ height: 12 }} />}
-      data={filteredTransactions}
-      keyExtractor={(item) => item.id.toString()}
+      data={sectionedTransactions}
+      keyExtractor={(item, idx) =>
+        item.type === "header"
+          ? `header-${item.month}-${idx}`
+          : `txn-${item.txn?.id}`
+      }
       renderItem={({ item }) => {
+        if (item.type === "header") {
+          return (
+            <View style={{ marginTop: 18, marginBottom: 6 }}>
+              <View
+                style={{
+                  borderBottomWidth: 1,
+                  borderBottomColor: "#ccc",
+                  marginBottom: 4,
+                }}
+              />
+              <Text style={{ fontSize: 16, fontWeight: "bold", color: "#7340ff" }}>
+                {item.month}
+              </Text>
+            </View>
+          );
+        }
+        // Transaction item
+        const txn = item.txn!;
         const categoryForCurrentItem = categories.find(
-          (cat) => cat.id === item.category_id
+          (cat) => cat.id === txn.category_id
         );
         return (
           <TouchableOpacity
-            key={item.id}
+            key={txn.id}
             activeOpacity={0.7}
-            onLongPress={() => deleteTransaction(item.id)}
+            onLongPress={() => deleteTransaction(txn.id)}
           >
             <TransactionsListItem
-              transaction={item}
+              transaction={txn}
               categoryInfo={categoryForCurrentItem}
               onToggleType={toggleTransactionType}
               onEdit={handleEditTransaction}
@@ -302,41 +311,33 @@ const Home = () => {
       }}
       ListHeaderComponent={
         <>
-          {/* <Card style={{ marginBottom: 16, padding: 16 }}>
-          <Text style={{ fontSize: 18, fontWeight: "bold", marginBottom: 10 }}>
-            Debug Navigation
-          </Text>
-          <Button title="Test Categorise Screen" onPress={testNavigateToCategories} />
-        </Card> */}
-
+          
           <AddTransaction
             insertTransaction={insertTransaction}
             deleteCategory={deleteCategory}
             cat={categories}
             addCategory={handleAddCategory}
           />
-
+ 
           <TransactionSummary
             totalExpenses={transactionsByMonth.totalExpenses}
             totalIncome={transactionsByMonth.totalIncome}
           />
-      <View>
-  <View style={{ flexDirection: 'row', alignItems: 'center', marginVertical: 10 }}>
-    <Text style={{ fontSize: 22, fontWeight: 'bold' }}>
-      All Transactions
-    </Text>
-    <MaterialCommunityIcons
-      name="information"
-      size={15}
-      color="#666"
-      style={{ marginLeft: 80 }}
-    />
-    <Text style={{ color: '#666', marginLeft: 4, fontSize: 11 }}>
-      Long press to delete
-    </Text>
-  </View>
-</View>
 
+          <View style={{ flexDirection: 'row', alignItems: 'center', marginVertical: 10 }}>
+            <Text style={{ fontSize: 22, fontWeight: 'bold' }}>
+              All Transactions
+            </Text>
+            <MaterialCommunityIcons
+              name="information"
+              size={15}
+              color="#666"
+              style={{ marginLeft: 80 }}
+            />
+            <Text style={{ color: '#666', marginLeft: 4, fontSize: 11 }}>
+              Long press to delete
+            </Text>
+          </View>
         </>
       }
       contentContainerStyle={{
@@ -361,13 +362,11 @@ function TransactionSummary({
     year: "numeric",
   });
 
-  // Function to determine the style based on the value (positive or negative)
-  const getMoneyTextStyle = (value: number): TextStyle => ({
+  const getMoneyTextStyle = (value: number): any => ({
     fontWeight: "bold",
-    color: value < 0 ? "#ff4500" : "#2e8b57", // Red for negative, custom green for positive
+    color: value < 0 ? "#ff4500" : "#2e8b57",
   });
 
-  // Helper function to format monetary values
   const formatMoney = (value: number) => {
     const absValue = Math.abs(value).toFixed(2);
     return `Rs ${value < 0 ? "-" : ""}${absValue}`;
@@ -420,6 +419,5 @@ const styles = StyleSheet.create({
     color: "#333",
     marginBottom: 10,
   },
-  // Removed moneyText style since we're now generating it dynamically
 });
 export default Home;

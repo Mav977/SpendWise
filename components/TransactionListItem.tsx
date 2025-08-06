@@ -62,7 +62,7 @@ const TransactionListItem = ({
       )
     }
   >
-    <Text style={styles.flipText}>
+    <Text style={{fontSize: 12,color: "#333"}}>
       Flip to {transaction.type === "Expense" ? "Income" : "Expense"}
     </Text>
   </TouchableOpacity>
@@ -102,11 +102,14 @@ function CategoryItem({
   emoji: string;
 })  {
     return(
-        <View style={[styles.categoryContainer,{backgroundColor: categoryColor? categoryColor+'40' : '#daff0acc', borderRadius: 10,
+        <View style={[styles.categoryContainer,{backgroundColor: categoryColor
+  ? `${categoryColor}33`
+  : 'rgba(179, 0, 255, 0.2)' ,
+  borderRadius:10,
     paddingHorizontal: 10,
     paddingVertical: 3,
     alignSelf: "flex-start"}]}>
-        <Text>
+        <Text style={{color: "#333"}}>
             {emoji} {categoryInfo?.name}
         </Text>
     </View>
