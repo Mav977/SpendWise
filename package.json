@@ -35,9 +35,12 @@
   "react-native-auto-size-text": "^1.1.1",
   "react-native-chart-kit": "^6.12.0",
   "react-native-get-sms-android": "^2.1.0",
+  "react-native-gifted-charts": "^1.4.64",
+  "react-native-linear-gradient": "^2.8.3",
   "react-native-permissions": "^5.4.1",
   "react-native-safe-area-context": "5.4.0",
   "react-native-screens": "~4.11.1",
+  "react-native-svg": "^15.12.1",
   "react-native-web": "^0.20.0"
  },
  "devDependencies": {

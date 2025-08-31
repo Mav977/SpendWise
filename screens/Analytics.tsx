@@ -1,7 +1,13 @@
-import { View, Text, FlatList, TouchableOpacity } from "react-native";
+import {
+  View,
+  Text,
+  FlatList,
+  TouchableOpacity,
+  ScrollView,
+  Dimensions,
+} from "react-native";
 import React, { useEffect, useLayoutEffect, useState } from "react";
 import Card from "../ui/Card";
-import { categoryColors } from "../constants";
 import { getDB } from "../db";
 import { getAllAppData } from "../src/db/helpers";
 import {
@@ -15,10 +21,12 @@ import { useIsFocused, useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import SegmentedControl from "@react-native-segmented-control/segmented-control";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { LineChart } from "react-native-gifted-charts";
 
 const Analytics = () => {
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+
   useLayoutEffect(() => {
     navigation.setOptions({
       title: "Analytics",
@@ -26,18 +34,31 @@ const Analytics = () => {
       headerTintColor: "#fff",
     });
   }, [navigation]);
+
   const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [alltransactions, setAllTransactions] = useState<Transaction[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [upiList, setUpiList] = useState<UPICategory[]>([]);
   const [selectedIndex, setSelectedIndex] = useState(0);
 
+  const isFocused = useIsFocused();
+
+  useEffect(() => {
+    if (isFocused) getData();
+  }, [isFocused]);
+
   async function getData() {
     const db = await getDB();
-    const { transactions, categories } = await getAllAppData(db);
+    const { transactions, allTransactions, categories } = await getAllAppData(
+      db
+    );
+
     db.getAllAsync("SELECT * FROM UPICategory").then((rows) =>
       setUpiList(rows as UPICategory[])
     );
+
     setTransactions(transactions);
+    setAllTransactions(allTransactions);
     setCategories(categories);
   }
 
@@ -47,27 +68,90 @@ const Analytics = () => {
     getData();
   }
 
-  const isFocused = useIsFocused();
-  useEffect(() => {
-    if (isFocused) {
-      getData();
-    }
-  }, [isFocused]);
-
-  function sumValues(arr: Transaction[]) {
-    return arr.reduce((acc, curr) => acc + curr.amount, 0);
-  }
+  const sumValues = (arr: Transaction[]) =>
+    arr.reduce((acc, curr) => acc + curr.amount, 0);
 
   const sortedCategories = categories
     .map((cat) => {
-      const catTransactions = transactions.filter(
-        (t) => t.category_id === cat.id
-      );
+      const catTransactions = transactions.filter((t) => t.category_id === cat.id);
       const total = sumValues(catTransactions);
       return { ...cat, total };
     })
     .sort((a, b) => b.total - a.total)
     .filter((cat) => cat.total > 0);
+
+  const screenWidth = Dimensions.get("window").width;
+
+  /** Get 12 months from first transaction */
+  function getMonthlyExpenses(transactions: Transaction[]) {
+    if (!transactions.length) return [];
+
+    const sortedTx = [...transactions].sort(
+      (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+    );
+
+    const firstTxDate = new Date(sortedTx[0].date);
+    const startMonth = firstTxDate.getMonth();
+    const startYear = firstTxDate.getFullYear();
+
+    const monthlyExpenses = Array(12).fill(0);
+    const monthLabels: string[] = [];
+
+    for (let i = 0; i < 12; i++) {
+      const date = new Date(startYear, startMonth + i, 1);
+      monthLabels.push(date.toLocaleString("default", { month: "short" }));
+
+      transactions.forEach((t) => {
+        const txDate = new Date(t.date);
+        if (
+          t.type === "Expense" &&
+          txDate.getMonth() === date.getMonth() &&
+          txDate.getFullYear() === date.getFullYear()
+        ) {
+          monthlyExpenses[i] += t.amount;
+        }
+      });
+    }
+
+    return monthlyExpenses.map((value, i) => ({
+      value,
+      labelComponent: () => (
+        <View style={{ alignItems: "center" }}>
+          <Text style={{ fontSize: 12, color: "#000" }}>{monthLabels[i]}</Text>
+        </View>
+      ),
+    }));
+  }
+
+  const monthlyData = getMonthlyExpenses(alltransactions);
+  const maxY = Math.max(...monthlyData.map((d) => d.value)) * 1.2 || 1;
+
+  // Y-axis labels multiples of 5K
+  const generateYAxisLabelTexts = () => {
+    if (maxY <= 0) return [];
+    const maxKValue = Math.ceil(maxY / 1000);
+    const maxRoundedToFive = Math.ceil(maxKValue / 5) * 5;
+    const stepSize = Math.max(5, Math.ceil(maxRoundedToFive / 5));
+    const labels: string[] = [];
+    for (let i = 0; i <= maxRoundedToFive; i += stepSize) {
+      labels.push(i === 0 ? "0" : i + "K");
+    }
+    return labels;
+  };
+  const yAxisLabelTexts = generateYAxisLabelTexts();
+
+  // Render data points with visible value above each point
+  const renderDataPoints = monthlyData.map((d, i, arr) => {
+    const trendColor =
+      i === 0 ? "#27ae60" : d.value <= arr[i - 1].value ? "#27ae60" : "#c0392b";
+
+    return {
+      ...d,
+      showDataPointLabel: true,
+     
+     
+    };
+  });
 
   return (
     <View style={{ flex: 1, backgroundColor: "#F2E7FF" }}>
@@ -92,7 +176,7 @@ const Analytics = () => {
               keyExtractor={(item) => item.id.toString()}
               ItemSeparatorComponent={() => <View style={{ height: 12 }} />}
               renderItem={({ item }) => {
-                const allTransactions = transactions.filter(
+                const allTransactions = alltransactions.filter(
                   (t) => t.category_id === item.id
                 );
                 return (
@@ -104,13 +188,11 @@ const Analytics = () => {
                         Transaction: allTransactions,
                       })
                     }
-                    //on long press to delete category
                     onLongPress={async () => {
                       if (item.id === 13) {
                         alert("This category cannot be deleted.");
                         return;
                       }
-
                       const db = await getDB();
                       await db.runAsync("DELETE FROM Categories WHERE id = ?", [
                         item.id,
@@ -126,32 +208,90 @@ const Analytics = () => {
                 padding: 20,
                 backgroundColor: "#F2E7FF",
               }}
-             ListHeaderComponent={
-  <View style={{ marginBottom: 16 }}>
-    <Text
-      style={{
-        fontSize: 24,
-        fontWeight: "bold",
-        textAlign: "center",
-        marginBottom: 10,
-      }}
-    >
-      Monthly Analysis
-    </Text>
-    <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "center" }}>
-      <MaterialCommunityIcons
-        name="information"
-        size={20}
-        color="#666"
-        style={{ marginRight: 6 }}
-      />
-      <Text style={{ color: "#666", fontSize: 14 }}>
-        Long press on a category to delete it.
-      </Text>
-    </View>
-  </View>
-}
-/>
+              ListHeaderComponent={
+                <View style={{ marginBottom: 16 }}>
+                  <Text
+                    style={{
+                      fontSize: 24,
+                      fontWeight: "bold",
+                      textAlign: "center",
+                      marginBottom: 10,
+                    }}
+                  >
+                    Monthly Analysis
+                  </Text>
+
+                  {/* Card-like wrapper */}
+                  <View
+                    style={{
+                      backgroundColor: "#fff",
+                      borderRadius: 12,
+                      padding: 16,
+                      marginHorizontal: 10,
+                      marginBottom: 20,
+                      shadowColor: "#000",
+                      shadowOffset: { width: 0, height: 2 },
+                      shadowOpacity: 0.1,
+                      shadowRadius: 4,
+                      elevation: 3,
+                    }}
+                  >
+                    <ScrollView
+                      horizontal
+                      showsHorizontalScrollIndicator={false}
+                      contentContainerStyle={{ paddingHorizontal: 10 }}
+                    >
+                      <LineChart
+                        areaChart={false} // Line chart only
+                        
+                        data={renderDataPoints}
+                    startFillColor="rgb(46, 217, 255)"
+        startOpacity={0.8}
+        endFillColor="rgb(203, 241, 250)"
+        endOpacity={0.3}
+                        color="#7300FF"
+                        spacing={60}
+                        hideDataPoints={false}
+                        showValuesAsDataPointsText 
+                        isAnimated
+                        animationDuration={2500}
+                        width={Math.max(
+                          renderDataPoints.length * 60,
+                          screenWidth - 40
+                        )}
+                        height={200}
+                        maxValue={maxY}
+                        yAxisLabelTexts={yAxisLabelTexts}
+                        yAxisColor="#666"
+                        yAxisTextStyle={{ color: "#666", fontSize: 12 }}
+                        yAxisLabelWidth={40}
+                        showYAxisIndices={true}
+                        noOfSections={yAxisLabelTexts.length - 1}
+                      />
+                    </ScrollView>
+
+                    <View
+                      style={{
+                        flexDirection: "row",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        marginTop: 8,
+                      }}
+                    >
+                      <MaterialCommunityIcons
+                        name="information"
+                        size={20}
+                        color="#666"
+                        style={{ marginRight: 6 }}
+                      />
+                      <Text style={{ color: "#666", fontSize: 14 }}>
+                        Long press on a category to delete it.
+                      </Text>
+                    </View>
+                  </View>
+                </View>
+              }
+            />
           ) : (
             <View
               style={{
@@ -161,15 +301,14 @@ const Analytics = () => {
                 backgroundColor: "#F2E7FF",
               }}
             >
-              <Text
-                style={{ textAlign: "center", fontSize: 16, color: "#888" }}
-              >
+              <Text style={{ textAlign: "center", fontSize: 16, color: "#888" }}>
                 No categories found with transaction data.
               </Text>
             </View>
           )}
         </View>
       )}
+
       {selectedIndex === 1 && (
         <View style={{ flex: 1 }}>
           {upiList.length > 0 ? (
@@ -228,9 +367,7 @@ const Analytics = () => {
                 backgroundColor: "#F2E7FF",
               }}
             >
-              <Text
-                style={{ textAlign: "center", fontSize: 16, color: "#888" }}
-              >
+              <Text style={{ textAlign: "center", fontSize: 16, color: "#888" }}>
                 No UPI merchants saved yet.
               </Text>
             </View>
@@ -242,3 +379,4 @@ const Analytics = () => {
 };
 
 export default Analytics;
+``
