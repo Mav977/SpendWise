@@ -6,10 +6,13 @@ import {
   Linking,
   Text,
   TouchableOpacity,
+  Platform,
 } from "react-native";
+import * as FileSystem from "expo-file-system";
+import * as IntentLauncher from "expo-intent-launcher";
+import * as Application from "expo-application";
 
 import { exportDatabase, importDatabase } from "../src/utils/ExportImportDB";
-
 import { getDB } from "../db";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
@@ -20,10 +23,85 @@ export default function SettingsScreen() {
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
+  const currentVersion = Application.nativeApplicationVersion;
+console.log("Current app version:", currentVersion);
+  const [latestRelease, setLatestRelease] = React.useState<{
+    version: string;
+    apkUrl: string;
+  } | null>(null);
+
+  /** FETCH LATEST GITHUB RELEASE */
+  const fetchLatestRelease = async () => {
+    try {
+      const response = await fetch(
+        "https://api.github.com/repos/Mav977/SpendWise/releases/latest"
+      );
+      const release = await response.json();
+      const apkAsset = release.assets?.find((a: any) =>
+        a.name.endsWith(".apk")
+      );
+      if (apkAsset) {
+        setLatestRelease({
+          version: release.tag_name,
+          apkUrl: apkAsset.browser_download_url,
+        });
+      }
+    } catch (e) {
+      console.error("Failed to fetch GitHub release", e);
+    }
+  };
+
+  React.useEffect(() => {
+    fetchLatestRelease();
+  }, []);
+
+  /** HANDLE APK UPDATE (ANDROID ONLY) */
+  const handleUpdate = async (apkUrl: string) => {
+    if (Platform.OS !== "android") {
+      Alert.alert("Update", "Please download the update from GitHub.");
+      Linking.openURL(apkUrl);
+      return;
+    }
+
+    try {
+      const path = FileSystem.documentDirectory + "Spendwise.apk";
+
+      const downloadResumable = FileSystem.createDownloadResumable(
+        apkUrl,
+        path,
+        {},
+        (downloadProgress) => {
+          const progress =
+            downloadProgress.totalBytesWritten /
+            downloadProgress.totalBytesExpectedToWrite;
+          console.log(`Download progress: ${(progress * 100).toFixed(2)}%`);
+        }
+      );
+
+      const downloadResult = await downloadResumable.downloadAsync();
+      if (downloadResult && downloadResult.uri) {
+        console.log("Downloaded to", downloadResult.uri);
+
+        // Launch installer
+        IntentLauncher.startActivityAsync("android.intent.action.VIEW", {
+          data: downloadResult.uri,
+          flags: 1 | 268435456, // FLAG_ACTIVITY_NEW_TASK | FLAG_GRANT_READ_URI_PERMISSION
+          type: "application/vnd.android.package-archive",
+        });
+      } else {
+        throw new Error("Download failed or uri not available.");
+      }
+    } catch (e) {
+      console.error(e);
+      Alert.alert("Error", "Failed to update app.");
+    }
+  };
+
+  /** CLEAR ALL DATA */
   const handleClearAllData = async () => {
     Alert.alert(
       "Clear All Data",
-      "This will permanently delete all data from your app. Go ahead?",
+      "This will permanently delete all transactions from your app. Go ahead?",
       [
         { text: "Cancel", style: "cancel" },
         {
@@ -34,8 +112,6 @@ export default function SettingsScreen() {
               const db = await getDB();
               await db.withTransactionAsync(async () => {
                 await db.runAsync("DELETE FROM Transactions");
-                await db.runAsync("DELETE FROM Categories");
-                await db.runAsync("DELETE FROM UPICategory");
               });
               Alert.alert("Success", "All data cleared.");
             } catch (e) {
@@ -48,6 +124,7 @@ export default function SettingsScreen() {
     );
   };
 
+  /** CLEAR DATA EXCEPT THIS MONTH */
   const handleClearDataExceptThisMonth = async () => {
     Alert.alert(
       "Clear Data Except This Month",
@@ -67,9 +144,10 @@ export default function SettingsScreen() {
                 1
               ).getTime();
               await db.withTransactionAsync(async () => {
-                await db.runAsync("DELETE FROM Transactions WHERE date < ?", [
-                  firstDayOfMonth,
-                ]);
+                await db.runAsync(
+                  "DELETE FROM Transactions WHERE date < ?",
+                  [firstDayOfMonth]
+                );
               });
               Alert.alert("Success", "Data except this month cleared.");
             } catch (e) {
@@ -84,12 +162,14 @@ export default function SettingsScreen() {
 
   return (
     <View style={styles.container}>
-      {/* Section Header for social links */}
+      {/* --- GitHub / LinkedIn Links --- */}
       <Text style={styles.linkHeader}>Connect with me:</Text>
 
       <TouchableOpacity
         style={styles.linkCard}
-        onPress={() => Linking.openURL("https://github.com/Mav977/SpendWise")}
+        onPress={() =>
+          Linking.openURL("https://github.com/Mav977/SpendWise")
+        }
       >
         <MaterialCommunityIcons
           name="github"
@@ -115,9 +195,28 @@ export default function SettingsScreen() {
         <Text style={styles.linkCardText}>LinkedIn: Madhav Raj Goyal</Text>
       </TouchableOpacity>
 
-      <View style={[styles.spacing, { height: 32 }]} />
+      {/* --- Update Button --- */}
+      {latestRelease && latestRelease.version !== currentVersion && (
+        <>
+          <View style={[styles.spacing, { height: 32 }]} />
+          <Text style={styles.linkHeader}>Version Update Available:</Text>
+          <TouchableOpacity
+            style={styles.linkCard}
+            onPress={() => handleUpdate(latestRelease.apkUrl)}
+          >
+            <MaterialCommunityIcons
+              name="update"
+              style={styles.linkIcon}
+              color="#333"
+            />
+            <Text style={styles.linkCardText}>
+              Update to {latestRelease.version}
+            </Text>
+          </TouchableOpacity>
+        </>
+      )}
 
-      {/* Data Management Section */}
+      {/* --- Data Management Section --- */}
       <Text style={styles.linkHeader}>Data Management:</Text>
       <Text style={styles.syncLabel}>Sync data across devices</Text>
 
@@ -147,11 +246,7 @@ export default function SettingsScreen() {
               "Importing a database will replace your current data. Continue?",
               [
                 { text: "Cancel", style: "cancel" },
-                {
-                  text: "Import",
-                  style: "destructive",
-                  onPress: importDatabase,
-                },
+                { text: "Import", style: "destructive", onPress: importDatabase },
               ]
             );
           }}
@@ -231,89 +326,24 @@ export default function SettingsScreen() {
   );
 }
 
+// --- STYLES ---
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 20,
-    backgroundColor: "#F2E7FF",
-  },
-  spacing: {
-    height: 16,
-  },
-  linkHeader: {
-    fontSize: 18,
-    fontWeight: "600",
-    marginBottom: 8,
-    color: "#333",
-  },
+  container: { flex: 1, padding: 20, backgroundColor: "#F2E7FF" },
+  spacing: { height: 16 },
+  linkHeader: { fontSize: 18, fontWeight: "600", marginBottom: 8, color: "#333" },
   customButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderRadius: 10,
-    marginBottom: 10,
+    flexDirection: "row", alignItems: "center", justifyContent: "center",
+    paddingVertical: 12, paddingHorizontal: 16, borderRadius: 10, marginBottom: 10
   },
-  primaryButton: {
-    backgroundColor: "rgba(115, 0, 255, 0.72)",
-  },
-  destructiveButton: {
-    backgroundColor: "rgba(175, 5, 255, 0.72)",
-  },
-  clearMonthlyButton: {
-    backgroundColor: "rgba(150, 0, 200, 0.72)",
-  },
-  reddishButton: {
-    backgroundColor: "#d32f2f",
-  },
-  blueButton: {
-    backgroundColor: "#1976d2",
-  },
-  settingsButton: {
-    backgroundColor: "#f9a825", // Amber 700
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  buttonText: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "bold",
-  },
-  linkCard: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "rgba(115, 0, 255, 0.1)",
-    padding: 16,
-    borderRadius: 10,
-    marginBottom: 10,
-  },
-  linkIcon: {
-    fontSize: 24,
-    marginRight: 10,
-  },
-  linkCardText: {
-    fontSize: 16,
-    fontWeight: "500",
-    color: "rgba(115, 0, 255, 1)",
-  },
-  syncButtonsContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 8,
-  },
-  syncButton: {
-    flex: 1,
-    marginHorizontal: 5,
-  },
-  syncLabel: {
-    textAlign: "center",
-    fontSize: 14,
-    color: "#666",
-    marginTop: 5,
-    marginBottom: 10,
-  },
+  primaryButton: { backgroundColor: "rgba(115, 0, 255, 0.72)" },
+  destructiveButton: { backgroundColor: "rgba(175, 5, 255, 0.72)" },
+  reddishButton: { backgroundColor: "#d32f2f" },
+  settingsButton: { backgroundColor: "#f9a825", shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.3, shadowRadius: 4, elevation: 3 },
+  buttonText: { color: "#fff", fontSize: 16, fontWeight: "bold" },
+  linkCard: { flexDirection: "row", alignItems: "center", backgroundColor: "rgba(115, 0, 255, 0.1)", padding: 16, borderRadius: 10, marginBottom: 10 },
+  linkIcon: { fontSize: 24, marginRight: 10 },
+  linkCardText: { fontSize: 16, fontWeight: "500", color: "rgba(115, 0, 255, 1)" },
+  syncButtonsContainer: { flexDirection: "row", justifyContent: "space-between", marginBottom: 8 },
+  syncButton: { flex: 1, marginHorizontal: 5 },
+  syncLabel: { textAlign: "center", fontSize: 14, color: "#666", marginTop: 5, marginBottom: 10 },
 });

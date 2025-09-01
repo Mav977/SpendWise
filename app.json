@@ -4,7 +4,7 @@
     "scheme": "SpendWise",
     "slug": "SpendWise",
     "deepLinks": true,
-    "version": "1.0.0",
+    "version": "3.1.0",
     "orientation": "portrait",
     "icon": "./assets/icons.png",
     "userInterfaceStyle": "light",
@@ -19,6 +19,7 @@
       "bundleIdentifier": "com.mav977.SpendWise"
     },
     "android": {
+    
       "adaptiveIcon": {
         "foregroundImage": "./assets/icons.png",
         "backgroundColor": "#ffffff"
