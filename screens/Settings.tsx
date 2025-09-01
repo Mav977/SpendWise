@@ -11,6 +11,7 @@ import {
 import * as FileSystem from "expo-file-system";
 import * as IntentLauncher from "expo-intent-launcher";
 import * as Application from "expo-application";
+import * as Sharing from "expo-sharing";
 
 import { exportDatabase, importDatabase } from "../src/utils/ExportImportDB";
 import { getDB } from "../db";
@@ -24,7 +25,7 @@ export default function SettingsScreen() {
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
   const currentVersion = Application.nativeApplicationVersion;
-console.log("Current app version:", currentVersion);
+  console.log("Current app version:", currentVersion);
   const [latestRelease, setLatestRelease] = React.useState<{
     version: string;
     apkUrl: string;
@@ -55,7 +56,7 @@ console.log("Current app version:", currentVersion);
     fetchLatestRelease();
   }, []);
 
-  /** HANDLE APK UPDATE (ANDROID ONLY) */
+  /** SIMPLIFIED APK UPDATE HANDLER */
   const handleUpdate = async (apkUrl: string) => {
     if (Platform.OS !== "android") {
       Alert.alert("Update", "Please download the update from GitHub.");
@@ -64,36 +65,78 @@ console.log("Current app version:", currentVersion);
     }
 
     try {
-      const path = FileSystem.documentDirectory + "Spendwise.apk";
+      Alert.alert("Downloading", "Starting download...", [], { cancelable: false });
 
-      const downloadResumable = FileSystem.createDownloadResumable(
-        apkUrl,
-        path,
-        {},
-        (downloadProgress) => {
-          const progress =
-            downloadProgress.totalBytesWritten /
-            downloadProgress.totalBytesExpectedToWrite;
-          console.log(`Download progress: ${(progress * 100).toFixed(2)}%`);
-        }
+      const fileName = "Spendwise_update.apk";
+      const downloadPath = FileSystem.documentDirectory + fileName;
+
+      const downloadResult = await FileSystem.downloadAsync(apkUrl, downloadPath);
+      
+      if (!downloadResult.uri) {
+        throw new Error("Download failed");
+      }
+
+      console.log("Downloaded to:", downloadResult.uri);
+
+      Alert.alert(
+        "Download Complete", 
+        "Choose how to install the update:",
+        [
+          {
+            text: "Auto Install",
+            onPress: async () => {
+              try {
+                await IntentLauncher.startActivityAsync("android.intent.action.VIEW", {
+                  data: downloadResult.uri,
+                  flags: 1 | 268435456, // NEW_TASK | GRANT_READ_URI_PERMISSION
+                  type: "application/vnd.android.package-archive",
+                });
+              } catch (error) {
+                console.error("Auto install failed:", error);
+                Alert.alert(
+                  "Installation Failed",
+                  "Auto-install didn't work. Please enable 'Install from unknown sources' in Settings > Security, then try the Share option.",
+                  [{ text: "OK" }]
+                );
+              }
+            }
+          },
+          {
+            text: "Share & Install",
+            onPress: async () => {
+              try {
+                if (await Sharing.isAvailableAsync()) {
+                  await Sharing.shareAsync(downloadResult.uri, {
+                    mimeType: "application/vnd.android.package-archive",
+                    dialogTitle: "Install SpendWise Update"
+                  });
+                } else {
+                  Alert.alert("Error", "Sharing not available on this device.");
+                }
+              } catch (error) {
+                console.error("Sharing failed:", error);
+                Alert.alert("Error", "Could not share APK file.");
+              }
+            }
+          },
+          {
+            text: "Download from GitHub",
+            onPress: () => Linking.openURL(apkUrl)
+          },
+          { text: "Cancel", style: "cancel" }
+        ]
       );
 
-      const downloadResult = await downloadResumable.downloadAsync();
-      if (downloadResult && downloadResult.uri) {
-        console.log("Downloaded to", downloadResult.uri);
-
-        // Launch installer
-        IntentLauncher.startActivityAsync("android.intent.action.VIEW", {
-          data: downloadResult.uri,
-          flags: 1 | 268435456, // FLAG_ACTIVITY_NEW_TASK | FLAG_GRANT_READ_URI_PERMISSION
-          type: "application/vnd.android.package-archive",
-        });
-      } else {
-        throw new Error("Download failed or uri not available.");
-      }
-    } catch (e) {
-      console.error(e);
-      Alert.alert("Error", "Failed to update app.");
+    } catch (error) {
+      console.error("Update error:", error);
+      Alert.alert(
+        "Download Failed", 
+        "Could not download update. Try downloading manually from GitHub.",
+        [
+          { text: "Open GitHub", onPress: () => Linking.openURL(apkUrl) },
+          { text: "Cancel", style: "cancel" }
+        ]
+      );
     }
   };
 
@@ -213,6 +256,14 @@ console.log("Current app version:", currentVersion);
               Update to {latestRelease.version}
             </Text>
           </TouchableOpacity>
+          
+          {/* Update Instructions */}
+          <View style={styles.updateInstructions}>
+            <MaterialCommunityIcons name="information" size={16} color="#666" />
+            <Text style={styles.instructionText}>
+              If auto-install fails, enable "Install from unknown sources" in Android Settings > Security
+            </Text>
+          </View>
         </>
       )}
 
@@ -346,4 +397,19 @@ const styles = StyleSheet.create({
   syncButtonsContainer: { flexDirection: "row", justifyContent: "space-between", marginBottom: 8 },
   syncButton: { flex: 1, marginHorizontal: 5 },
   syncLabel: { textAlign: "center", fontSize: 14, color: "#666", marginTop: 5, marginBottom: 10 },
+  updateInstructions: { 
+    flexDirection: "row", 
+    alignItems: "flex-start", 
+    backgroundColor: "rgba(255, 193, 7, 0.1)", 
+    padding: 12, 
+    borderRadius: 8, 
+    marginTop: 8 
+  },
+  instructionText: { 
+    flex: 1, 
+    marginLeft: 8, 
+    fontSize: 13, 
+    color: "#666", 
+    lineHeight: 18 
+  },
 });

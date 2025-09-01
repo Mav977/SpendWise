@@ -4,7 +4,7 @@ import { Category } from '../types';
 import Card from '../ui/Card';
 import { categoryColors } from '../constants';
 
-const AnalyticsListItem = ({ amount, category }: { amount: number, category: Category }) => {
+const AnalyticsListItem = ({ amount, category, percentage }: { amount: number, category: Category , percentage:number}) => {
   const categoryStripColor = categoryColors[category.name] || "rgba(64, 0, 255, 0.37)";
 
   return (
@@ -12,8 +12,9 @@ const AnalyticsListItem = ({ amount, category }: { amount: number, category: Cat
       <View style={[styles.colorStrip, { backgroundColor: categoryStripColor }]} />
       <View style={styles.contentContainer}>
         <View style={styles.categoryInfo}>
+
           <Text style={styles.categoryName}>{category.name}</Text>
-        </View>
+                 <Text style={{ fontSize: 14, color: "#555" }}>{percentage}%</Text> </View>
         <Text style={styles.amount}>
           Rs {amount.toFixed(2)}
         </Text>

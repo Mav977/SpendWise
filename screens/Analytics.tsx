@@ -71,11 +71,20 @@ const Analytics = () => {
   const sumValues = (arr: Transaction[]) =>
     arr.reduce((acc, curr) => acc + curr.amount, 0);
 
+  const totalMonthlyExpense = sumValues(
+    transactions.filter((t) => t.type === "Expense")
+  );
+
   const sortedCategories = categories
     .map((cat) => {
-      const catTransactions = transactions.filter((t) => t.category_id === cat.id);
+      const catTransactions = transactions.filter(
+        (t) => t.category_id === cat.id
+      );
       const total = sumValues(catTransactions);
-      return { ...cat, total };
+      const percentage = totalMonthlyExpense
+        ? Number(((total / totalMonthlyExpense) * 100).toFixed(1))
+        : 0;
+      return { ...cat, total, percentage };
     })
     .sort((a, b) => b.total - a.total)
     .filter((cat) => cat.total > 0);
@@ -140,18 +149,10 @@ const Analytics = () => {
   };
   const yAxisLabelTexts = generateYAxisLabelTexts();
 
-  // Render data points with visible value above each point
-  const renderDataPoints = monthlyData.map((d, i, arr) => {
-    const trendColor =
-      i === 0 ? "#27ae60" : d.value <= arr[i - 1].value ? "#27ae60" : "#c0392b";
-
-    return {
-      ...d,
-      showDataPointLabel: true,
-     
-     
-    };
-  });
+  const renderDataPoints = monthlyData.map((d, i, arr) => ({
+    ...d,
+    showDataPointLabel: true,
+  }));
 
   return (
     <View style={{ flex: 1, backgroundColor: "#F2E7FF" }}>
@@ -179,6 +180,7 @@ const Analytics = () => {
                 const allTransactions = alltransactions.filter(
                   (t) => t.category_id === item.id
                 );
+
                 return (
                   <TouchableOpacity
                     key={item.id}
@@ -200,7 +202,11 @@ const Analytics = () => {
                       getData();
                     }}
                   >
-                    <AnalyticsListItem amount={item.total} category={item} />
+                    <AnalyticsListItem
+                      amount={item.total}
+                      category={item}
+                      percentage={item.percentage}
+                    />
                   </TouchableOpacity>
                 );
               }}
@@ -221,7 +227,6 @@ const Analytics = () => {
                     Monthly Analysis
                   </Text>
 
-                  {/* Card-like wrapper */}
                   <View
                     style={{
                       backgroundColor: "#fff",
@@ -242,17 +247,16 @@ const Analytics = () => {
                       contentContainerStyle={{ paddingHorizontal: 10 }}
                     >
                       <LineChart
-                        areaChart={false} // Line chart only
-                        
+                        areaChart={false}
                         data={renderDataPoints}
-                    startFillColor="rgb(46, 217, 255)"
-        startOpacity={0.8}
-        endFillColor="rgb(203, 241, 250)"
-        endOpacity={0.3}
+                        startFillColor="rgb(46, 217, 255)"
+                        startOpacity={0.8}
+                        endFillColor="rgb(203, 241, 250)"
+                        endOpacity={0.3}
                         color="#7300FF"
                         spacing={60}
                         hideDataPoints={false}
-                        showValuesAsDataPointsText 
+                        showValuesAsDataPointsText
                         isAnimated
                         animationDuration={2500}
                         width={Math.max(
@@ -379,4 +383,3 @@ const Analytics = () => {
 };
 
 export default Analytics;
-``
