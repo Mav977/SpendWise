@@ -1,5 +1,5 @@
 # 💸 Spendwise – Smarter, Seamless Expense Tracking
-
+![GitHub all releases](https://img.shields.io/github/downloads/Mav977/SpendWise/total)
 Spendwise is not just another expense tracker — it's a **smarter, AI-powered UPI-aware expense manager** that works *quietly in the background*. You don’t even need to open the app every day — it automatically detects and logs your UPI transactions, and only notifies you when it needs your input. Designed for a seamless and minimal-effort experience.
 
 ---
