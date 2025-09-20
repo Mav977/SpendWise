@@ -145,7 +145,11 @@ const handleNotification = async (notification: any) => {
     // const amount = parseFloat(match[1].replace(/,/g, ""));
     // const receiver = match[3];
   
-    const hasUPIclue = fullMessage.includes("upi") || fullMessage.includes("UPI") || fullMessage.includes("Upi");
+   const msg = fullMessage.toLowerCase();
+const keywords = ["debited", "debit", "credited", "credit", "sent", "received"];
+
+const hasUPIclue = msg.includes("upi") && keywords.some(word => msg.includes(word));
+
     if(!hasUPIclue) {
       console.log("🛑 Not a likely UPI transaction");
       return;
