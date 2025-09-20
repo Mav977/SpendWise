@@ -119,6 +119,10 @@ const Analytics = () => {
         ) {
           monthlyExpenses[i] += t.amount;
         }
+        else if(t.type === "Income" && txDate.getMonth() === date.getMonth() &&
+          txDate.getFullYear() === date.getFullYear()){
+            monthlyExpenses[i] -= t.amount;
+          }
       });
     }
 
@@ -190,17 +194,7 @@ const Analytics = () => {
                         Transaction: allTransactions,
                       })
                     }
-                    onLongPress={async () => {
-                      if (item.id === 13) {
-                        alert("This category cannot be deleted.");
-                        return;
-                      }
-                      const db = await getDB();
-                      await db.runAsync("DELETE FROM Categories WHERE id = ?", [
-                        item.id,
-                      ]);
-                      getData();
-                    }}
+                    
                   >
                     <AnalyticsListItem
                       amount={item.total}
@@ -274,24 +268,6 @@ const Analytics = () => {
                       />
                     </ScrollView>
 
-                    <View
-                      style={{
-                        flexDirection: "row",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        marginTop: 8,
-                      }}
-                    >
-                      <MaterialCommunityIcons
-                        name="information"
-                        size={20}
-                        color="#666"
-                        style={{ marginRight: 6 }}
-                      />
-                      <Text style={{ color: "#666", fontSize: 14 }}>
-                        Long press on a category to delete it.
-                      </Text>
-                    </View>
                   </View>
                 </View>
               }
