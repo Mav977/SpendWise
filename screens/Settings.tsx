@@ -57,88 +57,20 @@ export default function SettingsScreen() {
   }, []);
 
   /** SIMPLIFIED APK UPDATE HANDLER */
-  const handleUpdate = async (apkUrl: string) => {
-    if (Platform.OS !== "android") {
-      Alert.alert("Update", "Please download the update from GitHub.");
-      Linking.openURL(apkUrl);
-      return;
-    }
-
-    try {
-      Alert.alert("Downloading", "Starting download...", [], { cancelable: false });
-
-      const fileName = "Spendwise_update.apk";
-      const downloadPath = FileSystem.documentDirectory + fileName;
-
-      const downloadResult = await FileSystem.downloadAsync(apkUrl, downloadPath);
-      
-      if (!downloadResult.uri) {
-        throw new Error("Download failed");
-      }
-
-      console.log("Downloaded to:", downloadResult.uri);
-
-      Alert.alert(
-        "Download Complete", 
-        "Choose how to install the update:",
-        [
-          {
-            text: "Auto Install",
-            onPress: async () => {
-              try {
-                await IntentLauncher.startActivityAsync("android.intent.action.VIEW", {
-                  data: downloadResult.uri,
-                  flags: 1 | 268435456, // NEW_TASK | GRANT_READ_URI_PERMISSION
-                  type: "application/vnd.android.package-archive",
-                });
-              } catch (error) {
-                console.error("Auto install failed:", error);
-                Alert.alert(
-                  "Installation Failed",
-                  "Auto-install didn't work. Please enable 'Install from unknown sources' in Settings > Security, then try the Share option.",
-                  [{ text: "OK" }]
-                );
-              }
-            }
-          },
-          {
-            text: "Share & Install",
-            onPress: async () => {
-              try {
-                if (await Sharing.isAvailableAsync()) {
-                  await Sharing.shareAsync(downloadResult.uri, {
-                    mimeType: "application/vnd.android.package-archive",
-                    dialogTitle: "Install SpendWise Update"
-                  });
-                } else {
-                  Alert.alert("Error", "Sharing not available on this device.");
-                }
-              } catch (error) {
-                console.error("Sharing failed:", error);
-                Alert.alert("Error", "Could not share APK file.");
-              }
-            }
-          },
-          {
-            text: "Download from GitHub",
-            onPress: () => Linking.openURL(apkUrl)
-          },
-          { text: "Cancel", style: "cancel" }
-        ]
-      );
-
-    } catch (error) {
-      console.error("Update error:", error);
-      Alert.alert(
-        "Download Failed", 
-        "Could not download update. Try downloading manually from GitHub.",
-        [
-          { text: "Open GitHub", onPress: () => Linking.openURL(apkUrl) },
-          { text: "Cancel", style: "cancel" }
-        ]
-      );
-    }
-  };
+/** SIMPLIFIED APK UPDATE HANDLER (GitHub only) */
+const handleUpdate = (apkUrl: string) => {
+  Alert.alert(
+    "Update Available",
+    "A new version is available. Download it from GitHub:",
+    [
+      {
+        text: "Download from GitHub",
+        onPress: () => Linking.openURL(apkUrl),
+      },
+      { text: "Cancel", style: "cancel" },
+    ]
+  );
+};
 
   /** CLEAR ALL DATA */
   const handleClearAllData = async () => {
@@ -239,33 +171,34 @@ export default function SettingsScreen() {
       </TouchableOpacity>
 
       {/* --- Update Button --- */}
-      {latestRelease && latestRelease.version !== currentVersion && (
-        <>
-          <View style={[styles.spacing, { height: 32 }]} />
-          <Text style={styles.linkHeader}>Version Update Available:</Text>
-          <TouchableOpacity
-            style={styles.linkCard}
-            onPress={() => handleUpdate(latestRelease.apkUrl)}
-          >
-            <MaterialCommunityIcons
-              name="update"
-              style={styles.linkIcon}
-              color="#333"
-            />
-            <Text style={styles.linkCardText}>
-              Update to {latestRelease.version}
-            </Text>
-          </TouchableOpacity>
-          
-          {/* Update Instructions */}
-          <View style={styles.updateInstructions}>
-            <MaterialCommunityIcons name="information" size={16} color="#666" />
-            <Text style={styles.instructionText}>
-              If auto-install fails, enable "Install from unknown sources" in Android Settings > Security
-            </Text>
-          </View>
-        </>
-      )}
+     {latestRelease && latestRelease.version !== currentVersion && (
+  <>
+    <View style={[styles.spacing, { height: 32 }]} />
+    <Text style={styles.linkHeader}>Version Update Available:</Text>
+    <TouchableOpacity
+      style={styles.linkCard}
+      onPress={() => handleUpdate(latestRelease.apkUrl)}
+    >
+      <MaterialCommunityIcons
+        name="update"
+        style={styles.linkIcon}
+        color="#333"
+      />
+      <Text style={styles.linkCardText}>
+        Update to {latestRelease.version}
+      </Text>
+    </TouchableOpacity>
+
+    {/* Update Instructions */}
+    <View style={styles.updateInstructions}>
+      <MaterialCommunityIcons name="information" size={16} color="#666" />
+      <Text style={styles.instructionText}>
+        Updates are hosted on GitHub. Tap the button above to download and install.
+      </Text>
+    </View>
+  </>
+)}
+
 
       {/* --- Data Management Section --- */}
       <Text style={styles.linkHeader}>Data Management:</Text>
