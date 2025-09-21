@@ -41,10 +41,11 @@ export default function SettingsScreen() {
       const apkAsset = release.assets?.find((a: any) =>
         a.name.endsWith(".apk")
       );
+     
       if (apkAsset) {
         setLatestRelease({
           version: release.tag_name,
-          apkUrl: apkAsset.browser_download_url,
+          apkUrl: release.html_url,
         });
       }
     } catch (e) {
@@ -170,33 +171,49 @@ const handleUpdate = (apkUrl: string) => {
         <Text style={styles.linkCardText}>LinkedIn: Madhav Raj Goyal</Text>
       </TouchableOpacity>
 
-      {/* --- Update Button --- */}
-     {latestRelease && latestRelease.version !== currentVersion && (
-  <>
-    <View style={[styles.spacing, { height: 32 }]} />
-    <Text style={styles.linkHeader}>Version Update Available:</Text>
-    <TouchableOpacity
-      style={styles.linkCard}
-      onPress={() => handleUpdate(latestRelease.apkUrl)}
-    >
+   {/* --- Update Section --- */}
+<View style={[styles.spacing, { height: 32 }]} />
+<Text style={styles.linkHeader}>App Version:</Text>
+
+{latestRelease ? (
+  latestRelease.version !== currentVersion ? (
+    <>
+      <TouchableOpacity
+        style={styles.linkCard}
+        onPress={() => handleUpdate(latestRelease.apkUrl)}
+      >
+        <MaterialCommunityIcons
+          name="update"
+          style={styles.linkIcon}
+          color="#333"
+        />
+        <Text style={styles.linkCardText}>
+          Update to {latestRelease.version}
+        </Text>
+      </TouchableOpacity>
+
+      {/* Update Instructions */}
+      <View style={styles.updateInstructions}>
+        <MaterialCommunityIcons name="information" size={16} color="#666" />
+        <Text style={styles.instructionText}>
+          Updates are hosted on GitHub. Tap the button above to download and install.
+        </Text>
+      </View>
+    </>
+  ) : (
+    <View style={styles.linkCard}>
       <MaterialCommunityIcons
-        name="update"
+        name="check-circle"
         style={styles.linkIcon}
-        color="#333"
+        color="green"
       />
       <Text style={styles.linkCardText}>
-        Update to {latestRelease.version}
-      </Text>
-    </TouchableOpacity>
-
-    {/* Update Instructions */}
-    <View style={styles.updateInstructions}>
-      <MaterialCommunityIcons name="information" size={16} color="#666" />
-      <Text style={styles.instructionText}>
-        Updates are hosted on GitHub. Tap the button above to download and install.
+        You’re up to date! (v{currentVersion})
       </Text>
     </View>
-  </>
+  )
+) : (
+  <Text style={{ color: "#666" }}>Checking for updates...</Text>
 )}
 
 
